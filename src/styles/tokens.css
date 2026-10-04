@@ -1,0 +1,94 @@
+:root {
+  --maze-blue-100: #f0faff;
+  --maze-blue-200: #ceeeff;
+  --maze-blue-300: #9ad6ff;
+  --maze-blue-400: #3b9fec;
+  --maze-blue-500: #0568fd;
+  --maze-blue-600: #034fd6;
+  --maze-blue-700: #0138a9;
+  --maze-blue-800: #012577;
+
+  --maze-neutral-000: #ffffff;
+  --maze-neutral-100: #f8f8fb;
+  --maze-neutral-200: #e8e8f1;
+  --maze-neutral-300: #cdcedd;
+  --maze-neutral-400: #9597b0;
+  --maze-neutral-500: #6c718c;
+  --maze-neutral-600: #535a74;
+  --maze-neutral-700: #3d425a;
+  --maze-neutral-800: #282d40;
+  --maze-neutral-900: #000000;
+
+  --maze-forest-100: #ebfcfa;
+  --maze-forest-200: #bcfae0;
+  --maze-forest-500: #158053;
+  --maze-forest-600: #00673c;
+
+  --maze-amber-100: #fff9ed;
+  --maze-amber-200: #ffeed1;
+  --maze-amber-400: #d29615;
+  --maze-amber-500: #ac7000;
+
+  --maze-red-100: #fff6f8;
+  --maze-red-200: #fee3e5;
+  --maze-red-500: #cc3f4d;
+
+  --maze-lavender-100: #f9f7ff;
+  --maze-lavender-200: #e7e7ff;
+  --maze-lavender-500: #6b5bee;
+  --maze-lavender-600: #5247c8;
+
+  --maze-radius-sm: 4px;
+  --maze-radius-md: 8px;
+
+  --maze-space-1: 4px;
+  --maze-space-2: 8px;
+  --maze-space-3: 16px;
+  --maze-space-4: 24px;
+  --maze-space-5: 32px;
+  --maze-space-6: 56px;
+
+  --maze-shadow-lowered: 0 1px 3px rgba(40, 45, 64, 0.06);
+  --maze-shadow-raised: 0 8px 28px rgba(40, 45, 64, 0.16);
+
+  /* Semantic aliases (all map to Maze tokens) */
+  --color-bg: var(--maze-neutral-100);
+  --color-surface: var(--maze-neutral-000);
+  --color-border: var(--maze-neutral-200);
+  --color-border-strong: var(--maze-neutral-300);
+  --color-text: var(--maze-neutral-800);
+  --color-text-muted: var(--maze-neutral-600);
+  --color-text-subtle: var(--maze-neutral-500);
+  --color-primary: var(--maze-blue-500);
+  --color-primary-hover: var(--maze-blue-600);
+  --color-focus: var(--maze-blue-400);
+  --color-ai: var(--maze-lavender-500);
+  --color-ai-strong: var(--maze-lavender-600);
+  --color-ai-bg: var(--maze-lavender-100);
+  --color-ai-border: var(--maze-lavender-200);
+
+  --status-holding: var(--maze-forest-500);
+  --status-holding-bg: var(--maze-forest-100);
+  --status-drifting: var(--maze-amber-500);
+  --status-drifting-dot: var(--maze-amber-400);
+  --status-drifting-bg: var(--maze-amber-100);
+  --status-expired: var(--maze-red-500);
+  --status-expired-bg: var(--maze-red-100);
+  --status-untested: var(--maze-neutral-500);
+  --status-untested-bg: var(--maze-neutral-100);
+
+  /* Type scale, ratio 1.25 from a 14px base */
+  --fs-100: 11.2px;
+  --fs-200: 14px;
+  --fs-300: 17.5px;
+  --fs-400: 21.875px;
+  --fs-500: 27.344px;
+  --fs-600: 34.18px;
+
+  --font-sans: 'Roobert PRO', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 180ms;
+
+  --sidebar-collapsed: 56px;
+  --sidebar-expanded: 240px;
+}
