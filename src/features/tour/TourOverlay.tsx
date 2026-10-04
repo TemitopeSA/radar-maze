@@ -55,7 +55,7 @@ export function TourOverlay() {
     if (!tour.active) return;
     let raf = 0;
     let scrolled = false;
-    const tick = () => {
+    const measure = () => {
       const el = findTarget(step.target);
       let next: Box | null = null;
       if (el) {
@@ -73,10 +73,22 @@ export function TourOverlay() {
         holeRef.current = next;
         setHole(next);
       }
-      raf = requestAnimationFrame(tick);
     };
-    tick();
-    return () => cancelAnimationFrame(raf);
+    const loop = () => {
+      measure();
+      raf = requestAnimationFrame(loop);
+    };
+    // rAF keeps the spotlight glued to the target; the interval and listeners cover throttled frames.
+    const interval = window.setInterval(measure, 120);
+    window.addEventListener('scroll', measure, true);
+    window.addEventListener('resize', measure);
+    loop();
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearInterval(interval);
+      window.removeEventListener('scroll', measure, true);
+      window.removeEventListener('resize', measure);
+    };
   }, [tour.active, step.target, tour.index]);
 
   useLayoutEffect(() => {

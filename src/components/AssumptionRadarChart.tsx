@@ -5,7 +5,7 @@ import { HERO_ID } from '../data/seed';
 import { STATUS_META, useElementWidth } from './ui';
 
 const H = 340;
-const M = { top: 20, right: 20, bottom: 44, left: 48 };
+const M = { top: 30, right: 20, bottom: 44, left: 48 };
 const X_MAX = 18;
 const NEVER = 19.5;
 
@@ -70,7 +70,7 @@ export function AssumptionRadarChart({ assumptions, onSelect }: { assumptions: A
           <text x={(sx(X_MAX) + 4 + sx(20)) / 2} y={H - M.bottom + 18} textAnchor="middle" className="axis-label">Never</text>
           <text x={M.left + iw / 2} y={H - 6} textAnchor="middle" className="axis-title">Time since last validated →</text>
           <text transform={`translate(12 ${M.top + ih / 2}) rotate(-90)`} textAnchor="middle" className="axis-title">Confidence →</text>
-          <text x={M.left + 8} y={M.top + 14} className="axis-note axis-note--good">Recent and confident</text>
+          <text x={M.left} y={M.top - 14} className="axis-note axis-note--good">↖ Recent and confident</text>
           <text x={sx(12) + 8} y={sy(0) - 8} className="axis-note">Older than 12 months</text>
 
           {ordered.map(({ a, x, y }) => {
