@@ -75,8 +75,8 @@ export function WrapUpPage() {
       <section className="card wrap" aria-labelledby="loop-title">
         <h2 id="loop-title" className="sr-only">The five-stage loop</h2>
         <div className="wrap__loop" data-tour="wrap-loop">
-          <div className="loop" style={{ width: SIZE, height: SIZE }}>
-            <svg width={SIZE} height={SIZE} aria-hidden>
+          <div className="loop">
+            <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height="100%" aria-hidden>
               <defs>
                 <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                   <path d="M0,0 L10,5 L0,10 z" fill="var(--maze-neutral-400)" />
@@ -101,7 +101,7 @@ export function WrapUpPage() {
                 <button
                   key={s.id}
                   className={`loop__node ${done[s.id] ? 'is-done' : ''} ${selected === i ? 'is-selected' : ''}`}
-                  style={{ left: p.x, top: p.y }}
+                  style={{ left: `${(p.x / SIZE) * 100}%`, top: `${(p.y / SIZE) * 100}%` }}
                   onClick={() => selectStage(i)}
                   aria-pressed={selected === i}
                   aria-label={`${i + 1}. ${s.label}${done[s.id] ? ', completed' : ''}`}

@@ -72,7 +72,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setActive(false);
     setSignalled(null);
     setCompleted(true);
-    trackEvent('Tour Completed');
+    trackEvent('Tour Completed', { via: 'finish' }, 'finish');
     trackView('/tour/complete');
     if (stateRef.current.screen !== 'wrapup') dispatch({ type: 'navigate', screen: 'wrapup' });
   }, [dispatch]);
@@ -93,6 +93,13 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setActive(false);
     setSignalled(null);
     const i = indexRef.current;
+    // Leaving from the final step is a completion, whichever way the viewer exits.
+    if (i === TOUR_STEPS.length - 1) {
+      setCompleted(true);
+      trackEvent('Tour Completed', { via: reason }, reason);
+      trackView('/tour/complete');
+      return;
+    }
     trackEvent('Tour Skipped', { step: i + 1, reason }, `${String(i + 1).padStart(2, '0')}-${TOUR_STEPS[i].id}`);
   }, []);
 

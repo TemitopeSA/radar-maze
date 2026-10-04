@@ -25,7 +25,7 @@ Lumen (a fictional fintech for small businesses) believes *“SMB owners choose 
 
 The prototype reports how viewers use it through **Vercel Web Analytics** and **Speed Insights** (cookieless, no personal data). See `src/analytics.ts`.
 
-**One-time setup:** in the Vercel dashboard, open the `radar-maze` project → **Analytics** → **Enable**. Speed Insights is already on.
+Web Analytics and Speed Insights are enabled on the `radar-maze` Vercel project; data appears under the project's **Analytics** and **Speed Insights** tabs.
 
 Because the app never changes its URL, every screen, tour step and key action is reported as a *virtual pageview*. These show up under **Pages** on every plan, including Hobby:
 
