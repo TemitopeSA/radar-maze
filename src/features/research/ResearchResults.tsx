@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { ArrowRight, Check, CircleCheck, Copy, Flag, Mail, MessageSquare, PenLine, Share2, Sparkles } from 'lucide-react';
 import { useStore } from '../../state/store';
 import { HERO_ID, HERO_STATEMENT, PRICING_DECISION_ID, RETEST_QUOTES } from '../../data/seed';
@@ -45,8 +46,14 @@ export function ResearchResults() {
     );
   }
 
+  const openShare = (source: string) => {
+    trackEvent('Share Opened', { source }, source);
+    setSharing(true);
+  };
+
   const accept = () => {
     dispatch({ type: 'update/accept' });
+    trackEvent('Update Accepted', { edited: state.proposal.edited, confidence: state.proposal.confidence }, state.proposal.edited ? 'edited' : 'as-suggested');
     toast('Assumption updated to v2. The Q2 pricing page decision is flagged for review.');
     tour.signal('accept');
   };
@@ -64,7 +71,7 @@ export function ResearchResults() {
         title="What drives SMB owners to choose Lumen?"
         description="Customers increasingly prioritize getting paid quickly and knowing their money is safe. Price still matters, but it is no longer the leading reason to choose Lumen."
         actions={
-          <button className="btn btn--secondary" onClick={() => setSharing(true)}>
+          <button className="btn btn--secondary" onClick={() => openShare('header')}>
             <Share2 size={16} aria-hidden /> Share update
           </button>
         }
@@ -157,7 +164,7 @@ export function ResearchResults() {
                 <button className="btn btn--primary" onClick={accept}>
                   <Check size={16} aria-hidden /> Accept update
                 </button>
-                <button className="btn btn--secondary" onClick={() => setEditing(true)}>
+                <button className="btn btn--secondary" onClick={() => { trackEvent('Update Edit Opened'); setEditing(true); }}>
                   <PenLine size={16} aria-hidden /> Edit
                 </button>
               </div>
@@ -176,7 +183,7 @@ export function ResearchResults() {
                   ? `${decision.owner.name} has been asked to review this decision.`
                   : 'Depends on the pricing assumption. Accepting the update flags it for review.'}
               </p>
-              <button className="btn btn--secondary btn--sm" onClick={() => setReviewing(true)}>
+              <button className="btn btn--secondary btn--sm" onClick={() => { trackEvent('Decision Review Opened', { source: 'results', decision: PRICING_DECISION_ID }, 'results'); setReviewing(true); }}>
                 <Flag size={14} aria-hidden /> Review decision
               </button>
             </div>
@@ -186,8 +193,8 @@ export function ResearchResults() {
 
           {accepted && (
             <div className="next-card">
-              <button className="btn btn--secondary" onClick={() => setSharing(true)}><Share2 size={16} aria-hidden /> Share update</button>
-              <button className="btn btn--primary" onClick={() => dispatch({ type: 'navigate', screen: 'wrapup' })}>
+              <button className="btn btn--secondary" onClick={() => openShare('after-accept')}><Share2 size={16} aria-hidden /> Share update</button>
+              <button className="btn btn--primary" onClick={() => { trackEvent('Full Loop Opened'); dispatch({ type: 'navigate', screen: 'wrapup' }); }}>
                 See the full loop <ArrowRight size={16} aria-hidden />
               </button>
             </div>
@@ -219,6 +226,7 @@ function EditProposal({ onClose }: { onClose: () => void }) {
             disabled={statement.trim().length < 8}
             onClick={() => {
               dispatch({ type: 'proposal/set', statement: statement.trim(), confidence });
+              trackEvent('Update Edited', { confidence });
               toast('Suggestion updated. Accept it when you’re ready.');
               onClose();
             }}
@@ -248,6 +256,7 @@ function ShareModal({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<'slack' | 'email'>('slack');
   const copy = async () => {
     try {
+      trackEvent('Summary Copied', { channel: tab }, tab);
       await navigator.clipboard.writeText(SHARE_TEXT);
       toast('Summary copied to clipboard.');
     } catch {
@@ -268,10 +277,10 @@ function ShareModal({ onClose }: { onClose: () => void }) {
       }
     >
       <div className="tabs tabs--compact" role="tablist" aria-label="Share channel">
-        <button role="tab" aria-selected={tab === 'slack'} className={`tabs__tab ${tab === 'slack' ? 'is-active' : ''}`} onClick={() => setTab('slack')}>
+        <button role="tab" aria-selected={tab === 'slack'} className={`tabs__tab ${tab === 'slack' ? 'is-active' : ''}`} onClick={() => { trackEvent('Share Channel Viewed', { channel: 'slack' }, 'slack'); setTab('slack'); }}>
           <MessageSquare size={14} aria-hidden /> Slack
         </button>
-        <button role="tab" aria-selected={tab === 'email'} className={`tabs__tab ${tab === 'email' ? 'is-active' : ''}`} onClick={() => setTab('email')}>
+        <button role="tab" aria-selected={tab === 'email'} className={`tabs__tab ${tab === 'email' ? 'is-active' : ''}`} onClick={() => { trackEvent('Share Channel Viewed', { channel: 'email' }, 'email'); setTab('email'); }}>
           <Mail size={14} aria-hidden /> Email
         </button>
       </div>

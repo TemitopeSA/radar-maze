@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { slug, trackEvent, trackView } from '../../analytics';
 import { ArrowLeft, ArrowRight, Check, CircleCheck, LoaderCircle, Minus, Plus, Rocket, ShieldCheck, Sparkles, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { BIAS_REWRITE, LEADING_QUESTION, METHODS, useStore, type MethodId } from '../../state/store';
 import { HERO_ID } from '../../data/seed';
@@ -14,6 +15,10 @@ export function StudyBuilder() {
   const { builder } = state;
   const hero = state.assumptions.find((a) => a.id === HERO_ID)!;
   const setStep = (step: number) => dispatch({ type: 'builder/set', patch: { step } });
+
+  useEffect(() => {
+    trackView(`/app/builder/${builder.step + 1}-${slug(STEPS[builder.step])}`);
+  }, [builder.step]);
 
   return (
     <div className="page page--narrow">
@@ -77,7 +82,7 @@ function ObjectiveStep() {
         <div className="kicker kicker--ai"><Sparkles size={12} aria-hidden /> Recommended method</div>
         <button
           className={`method method--recommended ${builder.method === 'interviews-survey' ? 'is-selected' : ''}`}
-          onClick={() => dispatch({ type: 'builder/set', patch: { method: 'interviews-survey' } })}
+          onClick={() => { trackEvent('Method Selected', { method: 'interviews-survey' }, 'interviews-survey'); dispatch({ type: 'builder/set', patch: { method: 'interviews-survey' } }); }}
           aria-pressed={builder.method === 'interviews-survey'}
         >
           <span className="method__radio" aria-hidden>{builder.method === 'interviews-survey' && <Check size={12} />}</span>
@@ -88,11 +93,11 @@ function ObjectiveStep() {
           </span>
         </button>
         {!showAlternatives ? (
-          <button className="link-btn method-alt-toggle" onClick={() => setShowAlternatives(true)}>Choose a different method</button>
+          <button className="link-btn method-alt-toggle" onClick={() => { trackEvent('Alternative Methods Shown'); setShowAlternatives(true); }}>Choose a different method</button>
         ) : (
           <div className="method-alts" role="group" aria-label="Alternative methods">
             {(['interviews', 'survey', 'prototype'] as MethodId[]).map((id) => (
-              <button key={id} className={`method method--alt ${builder.method === id ? 'is-selected' : ''}`} onClick={() => dispatch({ type: 'builder/set', patch: { method: id } })} aria-pressed={builder.method === id}>
+              <button key={id} className={`method method--alt ${builder.method === id ? 'is-selected' : ''}`} onClick={() => { trackEvent('Method Selected', { method: id }, id); dispatch({ type: 'builder/set', patch: { method: id } }); }} aria-pressed={builder.method === id}>
                 <span className="method__radio" aria-hidden>{builder.method === id && <Check size={12} />}</span>
                 <span>
                   <span className="method__title">{METHODS[id].label}</span>
@@ -110,6 +115,10 @@ function ObjectiveStep() {
 function QuestionsStep() {
   const { state, dispatch } = useStore();
   const { builder } = state;
+  const resolveBias = (resolution: 'accepted' | 'kept') => {
+    trackEvent('Bias Check Resolved', { resolution }, resolution);
+    dispatch({ type: 'builder/bias', resolution });
+  };
   return (
     <div className="stack">
       <div className="step-intro">
@@ -150,10 +159,10 @@ function QuestionsStep() {
                   <p>{BIAS_REWRITE}</p>
                 </div>
                 <div className="row-actions row-actions--start">
-                  <button className="btn btn--primary btn--sm" onClick={() => dispatch({ type: 'builder/bias', resolution: 'accepted' })}>
+                  <button className="btn btn--primary btn--sm" onClick={() => resolveBias('accepted')}>
                     <Check size={14} aria-hidden /> Accept rewrite
                   </button>
-                  <button className="btn btn--ghost btn--sm" onClick={() => dispatch({ type: 'builder/bias', resolution: 'kept' })}>Keep original</button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => resolveBias('kept')}>Keep original</button>
                 </div>
               </div>
             )}
@@ -164,14 +173,14 @@ function QuestionsStep() {
                   <strong>Rewritten.</strong> Was: <span className="struck">{LEADING_QUESTION}</span>
                   <div className="muted small">The new wording lets participants name their own reasons, so price only shows up if it really matters to them.</div>
                 </div>
-                <button className="link-btn link-btn--muted" onClick={() => dispatch({ type: 'builder/bias', resolution: 'kept' })}>Undo</button>
+                <button className="link-btn link-btn--muted" onClick={() => resolveBias('kept')}>Undo</button>
               </div>
             )}
             {q.flagged && builder.bias === 'kept' && (
               <div className="bias-result bias-result--kept" role="status">
                 <TriangleAlert size={14} aria-hidden />
                 <div>Kept as written. Answers to this question may overstate the role of price.</div>
-                <button className="link-btn" onClick={() => dispatch({ type: 'builder/bias', resolution: 'accepted' })}>Use rewrite</button>
+                <button className="link-btn" onClick={() => resolveBias('accepted')}>Use rewrite</button>
               </div>
             )}
           </li>
@@ -188,7 +197,11 @@ function RecruitmentStep() {
   const { state, dispatch } = useStore();
   const { builder } = state;
   const toast = useToast();
-  const setSize = (n: number) => dispatch({ type: 'builder/set', patch: { sampleSize: Math.min(200, Math.max(10, n)) } });
+  const [draft, setDraft] = useState<string | null>(null);
+  const setSize = (n: number) => {
+    setDraft(null);
+    dispatch({ type: 'builder/set', patch: { sampleSize: Math.min(200, Math.max(10, Math.round(n) || 10)) } });
+  };
   return (
     <div className="recruit">
       <div className="stack-lg">
@@ -215,17 +228,29 @@ function RecruitmentStep() {
           <label className="field__label" htmlFor="sample">Sample size</label>
           <div className="stepper-input">
             <button className="icon-btn icon-btn--bordered" onClick={() => setSize(builder.sampleSize - 10)} aria-label="Decrease sample size by 10"><Minus size={16} /></button>
-            <input id="sample" className="input" type="number" min={10} max={200} value={builder.sampleSize} onChange={(e) => setSize(Number(e.target.value) || 10)} />
+            <input
+              id="sample"
+              className="input"
+              type="number"
+              inputMode="numeric"
+              min={10}
+              max={200}
+              value={draft ?? builder.sampleSize}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={() => draft !== null && setSize(Number(draft))}
+              onKeyDown={(e) => e.key === 'Enter' && draft !== null && setSize(Number(draft))}
+              aria-describedby="sample-help"
+            />
             <button className="icon-btn icon-btn--bordered" onClick={() => setSize(builder.sampleSize + 10)} aria-label="Increase sample size by 10"><Plus size={16} /></button>
           </div>
-          <span className="field__help">40 is enough to compare four drivers with reasonable confidence.</span>
+          <span id="sample-help" className="field__help">Between 10 and 200. 40 is enough to compare four drivers with reasonable confidence.</span>
         </div>
         <div className="fresh-eyes">
           <div>
             <label htmlFor="fresh" className="field__label">Fresh Eyes</label>
             <p className="muted small">Exclude anyone who took a Lumen study in the last 90 days.</p>
           </div>
-          <Toggle id="fresh" checked={builder.freshEyes} onChange={(v) => dispatch({ type: 'builder/set', patch: { freshEyes: v } })} label="Fresh Eyes" />
+          <Toggle id="fresh" checked={builder.freshEyes} onChange={(v) => { trackEvent('Fresh Eyes Toggled', { on: v }, v ? 'on' : 'off'); dispatch({ type: 'builder/set', patch: { freshEyes: v } }); }} label="Fresh Eyes" />
         </div>
       </div>
       <aside className="audience-summary" aria-label="Audience summary">
@@ -256,6 +281,7 @@ function ReviewStep() {
       tour.signal('launch');
       return;
     }
+    trackEvent('Study Launched', { sample: builder.sampleSize, method: builder.method }, builder.method);
     setLaunching(true);
     window.setTimeout(() => {
       dispatch({ type: 'research/launch' });

@@ -13,7 +13,7 @@ export const WEEKS = ['2026-08-10', '2026-08-17', '2026-08-24', '2026-08-31', '2
 export const DRIFT_WEEK_INDEX = 5;
 
 export const PEOPLE = {
-  dana: { name: 'Dana Okafor', initials: 'DO', role: 'Head of Product' },
+  dana: { name: 'Dana Mercer', initials: 'DM', role: 'Head of Product' },
   marcus: { name: 'Marcus Chen', initials: 'MC', role: 'Product Manager, Invoicing' },
   priya: { name: 'Priya Raman', initials: 'PR', role: 'Research Lead' },
   leo: { name: 'Leo Martins', initials: 'LM', role: 'Growth PM' },
@@ -382,7 +382,7 @@ function quotes(): Quote[] {
       ],
     },
     {
-      id: 'q10', participant: 'Chris Adeyemi', role: 'Owner, design studio (4 employees)', studyId: 's3',
+      id: 'q10', participant: 'Chris Holloway', role: 'Owner, design studio (4 employees)', studyId: 's3',
       date: '2026-08-18', clipTime: '09:51', text: 'Monday morning I open Lumen to chase whoever hasn’t paid their invoice.', assumptionId: 'a3', era: 'recent', theme: 'Workflow',
       transcript: [
         { speaker: 'Maze AI', text: 'Walk me through a typical week with Lumen.' },
@@ -490,7 +490,7 @@ function decisions(): Decision[] {
 
 function events(): HistoryEvent[] {
   return [
-    { id: 'e1', assumptionId: HERO_ID, date: '2025-03-10', kind: 'created', title: 'Assumption added by Dana Okafor', detail: 'Starting confidence: 70. Based on win/loss notes from sales.' },
+    { id: 'e1', assumptionId: HERO_ID, date: '2025-03-10', kind: 'created', title: 'Assumption added by Dana Mercer', detail: 'Starting confidence: 70. Based on win/loss notes from sales.' },
     { id: 'e2', assumptionId: HERO_ID, date: '2025-11-12', kind: 'validated', title: 'Validated by “Why SMBs pick Lumen” survey', detail: '186 participants. 64% named price as the main reason. Confidence 70 → 78.' },
     { id: 'e3', assumptionId: HERO_ID, date: '2026-03-18', kind: 'linked', title: 'Linked to decision “Q2 pricing page: lead with lowest fees”' },
     { id: 'e4', assumptionId: HERO_ID, date: '2026-08-24', kind: 'confidence', title: 'Confidence 78 → 74', detail: 'Switching stories interviews: payout speed came up more often than price.' },

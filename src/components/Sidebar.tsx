@@ -55,10 +55,10 @@ export function Sidebar() {
           <CircleHelp size={18} aria-hidden />
           <span className="sidebar__text">Help</span>
         </button>
-        <button className="sidebar__item sidebar__user" onClick={() => toast('Signed in as Dana Okafor (fictional).', 'info')}>
+        <button className="sidebar__item sidebar__user" onClick={() => toast('Signed in as Dana Mercer (fictional).', 'info')}>
           <Avatar person={PEOPLE.dana} size={26} />
           <span className="sidebar__text">
-            <span className="sidebar__user-name">Dana Okafor</span>
+            <span className="sidebar__user-name">Dana Mercer</span>
             <span className="sidebar__user-role">Head of Product</span>
           </span>
         </button>

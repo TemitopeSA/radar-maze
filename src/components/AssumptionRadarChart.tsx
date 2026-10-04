@@ -40,9 +40,14 @@ export function AssumptionRadarChart({ assumptions, onSelect }: { assumptions: A
   const sx = (m: number) => M.left + (Math.min(m, 20) / 20) * iw;
   const sy = (c: number) => M.top + (1 - c / 100) * ih;
 
+  let never = 0;
   const points = assumptions.map((a) => {
-    const months = a.lastValidated ? Math.min(monthsSince(a.lastValidated), X_MAX) : NEVER;
-    return { a, x: sx(months), y: sy(a.confidence) };
+    if (!a.lastValidated) {
+      // Fan out never-validated assumptions inside their column so they don't stack on one spot.
+      const offset = ((never++ % 5) - 2) * 0.32;
+      return { a, x: sx(NEVER + offset), y: sy(a.confidence) };
+    }
+    return { a, x: sx(Math.min(monthsSince(a.lastValidated), X_MAX)), y: sy(a.confidence) };
   });
   // Draw the hovered and hero points last so they sit on top.
   const ordered = [...points].sort((p, q) => Number(p.a.id === HERO_ID) - Number(q.a.id === HERO_ID) || Number(p.a.id === hover) - Number(q.a.id === hover));

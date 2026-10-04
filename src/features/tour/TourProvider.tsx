@@ -1,6 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStore } from '../../state/store';
+import { noteTourStep, trackEvent, trackView } from '../../analytics';
 import { TOUR_STEPS } from './tourSteps';
+
+export type TourSource = 'welcome' | 'guide' | 'restart';
 
 interface TourContextValue {
   active: boolean;
@@ -9,10 +12,10 @@ interface TourContextValue {
   completed: boolean;
   welcome: null | 'first' | 'restart';
   canAdvance: boolean;
-  goTo: (index: number) => void;
+  goTo: (index: number, source?: TourSource) => void;
   next: () => void;
   back: () => void;
-  skip: () => void;
+  skip: (reason?: 'button' | 'escape' | 'explore') => void;
   finish: () => void;
   signal: (name: string) => void;
   openWelcome: (mode: 'first' | 'restart') => void;
@@ -20,6 +23,8 @@ interface TourContextValue {
 }
 
 const TourContext = createContext<TourContextValue | null>(null);
+
+const stepPath = (i: number) => `/tour/${String(i + 1).padStart(2, '0')}-${TOUR_STEPS[i].id}`;
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const { state, dispatch } = useStore();
@@ -32,21 +37,28 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
   // Steps read the latest state when they prepare the app, without re-creating callbacks every render.
   const stateRef = useRef(state);
-  stateRef.current = state;
   const indexRef = useRef(index);
-  indexRef.current = index;
   const activeRef = useRef(active);
-  activeRef.current = active;
+  useLayoutEffect(() => {
+    stateRef.current = state;
+    indexRef.current = index;
+    activeRef.current = active;
+  });
 
   const goTo = useCallback(
-    (i: number) => {
+    (i: number, source?: TourSource) => {
       const step = TOUR_STEPS[i];
       if (!step) return;
+      if (source) trackEvent('Tour Started', { source, step: i + 1 }, source);
       step.prepare(stateRef.current, dispatch);
+      indexRef.current = i;
+      activeRef.current = true;
       setIndex(i);
       setActive(true);
       setSignalled(null);
       setVisited((v) => new Set(v).add(i));
+      noteTourStep(i + 1);
+      trackView(stepPath(i));
     },
     [dispatch],
   );
@@ -56,8 +68,12 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const canAdvance = active && gateMet;
 
   const finish = useCallback(() => {
+    activeRef.current = false;
     setActive(false);
+    setSignalled(null);
     setCompleted(true);
+    trackEvent('Tour Completed');
+    trackView('/tour/complete');
     if (stateRef.current.screen !== 'wrapup') dispatch({ type: 'navigate', screen: 'wrapup' });
   }, [dispatch]);
 
@@ -71,7 +87,14 @@ export function TourProvider({ children }: { children: ReactNode }) {
     if (indexRef.current > 0) goTo(indexRef.current - 1);
   }, [goTo]);
 
-  const skip = useCallback(() => setActive(false), []);
+  const skip = useCallback((reason: 'button' | 'escape' | 'explore' = 'button') => {
+    if (!activeRef.current) return;
+    activeRef.current = false;
+    setActive(false);
+    setSignalled(null);
+    const i = indexRef.current;
+    trackEvent('Tour Skipped', { step: i + 1, reason }, `${String(i + 1).padStart(2, '0')}-${TOUR_STEPS[i].id}`);
+  }, []);
 
   const signal = useCallback(
     (name: string) => {
@@ -79,6 +102,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
       const current = TOUR_STEPS[indexRef.current];
       if (current.gate?.signal !== name) return;
       setSignalled(name);
+      trackEvent('Tour Gate Completed', { gate: name }, name);
       if (current.gate.autoAdvance) {
         // Let the click's own navigation commit before the next step prepares the screen.
         window.setTimeout(() => goTo(indexRef.current + 1), 0);
@@ -88,14 +112,12 @@ export function TourProvider({ children }: { children: ReactNode }) {
   );
 
   const openWelcome = useCallback((mode: 'first' | 'restart') => {
+    activeRef.current = false;
     setActive(false);
+    setSignalled(null);
     setWelcome(mode);
   }, []);
   const closeWelcome = useCallback(() => setWelcome(null), []);
-
-  useEffect(() => {
-    if (!active) setSignalled(null);
-  }, [active]);
 
   const value = useMemo(
     () => ({ active, index, visited, completed, welcome, canAdvance, goTo, next, back, skip, finish, signal, openWelcome, closeWelcome }),

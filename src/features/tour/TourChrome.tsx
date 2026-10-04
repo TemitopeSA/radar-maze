@@ -5,6 +5,7 @@ import { Menu } from '../../components/ui';
 import { useToast } from '../../components/Toast';
 import { useStore } from '../../state/store';
 import { useTour } from './TourProvider';
+import { trackEvent } from '../../analytics';
 import { TOUR_STEPS } from './tourSteps';
 
 export function WelcomeModal() {
@@ -12,23 +13,29 @@ export function WelcomeModal() {
   const tour = useTour();
   if (!tour.welcome) return null;
   const dirty = state.journey.launched || state.journey.accepted;
+  const mode = tour.welcome;
   const start = (reset: boolean) => {
     if (reset) dispatch({ type: 'reset' });
+    if (mode === 'restart') trackEvent('Tour Restarted', { resetData: reset }, reset ? 'reset-data' : 'keep-data');
     tour.closeWelcome();
     // Wait a tick so a reset commits before the first step prepares the app.
-    window.setTimeout(() => tour.goTo(0), 0);
+    window.setTimeout(() => tour.goTo(0, mode === 'restart' ? 'restart' : 'welcome'), 0);
+  };
+  const dismiss = () => {
+    trackEvent('Welcome Dismissed', { mode: mode ?? 'first' }, mode === 'restart' ? 'restart' : 'first-visit');
+    tour.closeWelcome();
   };
   return (
     <Modal
       title="What if Maze could tell you when your product bets stop being true?"
       kicker="Introducing Assumption Radar"
-      onClose={tour.closeWelcome}
+      onClose={dismiss}
       size="md"
       closeOnBackdrop={false}
       footer={
         tour.welcome === 'restart' && dirty ? (
           <>
-            <button className="btn btn--ghost" onClick={tour.closeWelcome}>Cancel</button>
+            <button className="btn btn--ghost" onClick={dismiss}>Cancel</button>
             <button className="btn btn--secondary" onClick={() => start(false)}>Keep my changes</button>
             <button className="btn btn--primary" onClick={() => start(true)} data-autofocus>
               <RotateCcw size={16} aria-hidden /> Reset demo data and start
@@ -36,7 +43,7 @@ export function WelcomeModal() {
           </>
         ) : (
           <>
-            <button className="btn btn--ghost" onClick={tour.closeWelcome}>I’ll explore</button>
+            <button className="btn btn--ghost" onClick={dismiss}>I’ll explore</button>
             <button className="btn btn--primary" onClick={() => start(false)} data-autofocus>
               <Play size={16} aria-hidden /> Start the tour
             </button>
@@ -65,7 +72,7 @@ export function WelcomeModal() {
           </svg>
         </div>
         <p>
-          You’re <strong>Dana Okafor</strong>, Head of Product at <strong>Lumen</strong>. Your team has been betting on low prices to win customers. New research suggests something may have changed. Let’s investigate.
+          You’re <strong>Dana Mercer</strong>, Head of Product at <strong>Lumen</strong>. Your team has been betting on low prices to win customers. New research suggests something may have changed. Let’s investigate.
         </p>
         {tour.welcome === 'restart' && dirty && (
           <p className="notice">
@@ -101,7 +108,7 @@ export function GuideButton() {
               className="menu__item menu__item--strong"
               onClick={() => {
                 close();
-                tour.goTo(tour.active || tour.visited.size === 0 || tour.completed ? 0 : tour.index);
+                tour.goTo(tour.active || tour.visited.size === 0 || tour.completed ? 0 : tour.index, 'guide');
               }}
             >
               <Play size={16} aria-hidden />
@@ -117,6 +124,7 @@ export function GuideButton() {
                     className={`menu__item guide__step ${tour.active && tour.index === i ? 'is-current' : ''}`}
                     onClick={() => {
                       close();
+                      trackEvent('Guide Step Jump', { step: i + 1 }, `${String(i + 1).padStart(2, '0')}-${s.id}`);
                       tour.goTo(i);
                     }}
                   >
@@ -157,6 +165,7 @@ export function GuideButton() {
                 onClick={() => {
                   tour.skip();
                   dispatch({ type: 'reset' });
+                  trackEvent('Demo Data Reset');
                   setConfirmReset(false);
                   toast('Demo data reset. Lumen is back to the start of the story.');
                 }}

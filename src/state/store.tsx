@@ -337,7 +337,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'signal/feedback': {
       const [events, nextId] = event(state, {
         assumptionId: HERO_ID, date: TODAY, kind: 'feedback',
-        title: action.kind === 'agree' ? 'Dana Okafor confirmed the drift signal' : 'Dana Okafor marked the drift signal for investigation',
+        title: action.kind === 'agree' ? 'Dana Mercer confirmed the drift signal' : 'Dana Mercer marked the drift signal for investigation',
         detail: action.note || undefined,
       });
       return { ...state, signalFeedback: { kind: action.kind, note: action.note }, events, nextId };

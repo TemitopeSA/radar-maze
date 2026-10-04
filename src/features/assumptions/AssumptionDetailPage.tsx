@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { trackEvent, trackView } from '../../analytics';
 import {
   Archive, ArrowRight, Bell, CalendarClock, CircleCheck, Ellipsis, FlaskConical, GitBranch, Link2, MessageSquare, PenLine, Radar, Sparkles,
   ThumbsDown, ThumbsUp, TrendingDown, UserRound,
@@ -31,7 +32,13 @@ export function AssumptionDetailPage() {
   const decisions = state.decisions.filter((d) => a.decisionIds.includes(d.id));
   const quotes = state.quotes.filter((q) => q.assumptionId === a.id);
 
+  // Tabs beyond Overview count as their own virtual pages.
+  useEffect(() => {
+    if (state.detailTab !== 'overview') trackView(`/app/assumption/${isHero ? 'pricing-hero' : 'other'}/${state.detailTab}`);
+  }, [state.detailTab, isHero]);
+
   const retest = () => {
+    trackEvent('Re-test Clicked', { hero: isHero }, isHero ? 'hero' : 'other');
     if (!isHero) {
       toast('In this concept, the re-test flow is built for the pricing assumption. Open it from the Assumptions list to try it.', 'info');
       return;
@@ -290,6 +297,7 @@ function SignalCard({ a }: { a: Assumption }) {
           onSubmit={(e) => {
             e.preventDefault();
             dispatch({ type: 'signal/feedback', kind: 'disagree', note: `${reason}${note ? `: ${note}` : ''}` });
+            trackEvent('Signal Feedback', { kind: 'disagree', reason }, 'not-convinced');
             toast('Signal marked for investigation.');
           }}
         >
@@ -309,7 +317,7 @@ function SignalCard({ a }: { a: Assumption }) {
         </form>
       ) : (
         <div className="row-actions row-actions--start">
-          <button className="btn btn--secondary btn--sm" onClick={() => { dispatch({ type: 'signal/feedback', kind: 'agree' }); toast('Thanks for confirming the signal.'); }}>
+          <button className="btn btn--secondary btn--sm" onClick={() => { dispatch({ type: 'signal/feedback', kind: 'agree' }); trackEvent('Signal Feedback', { kind: 'agree' }, 'looks-right'); toast('Thanks for confirming the signal.'); }}>
             <ThumbsUp size={14} aria-hidden /> Looks right
           </button>
           <button className="btn btn--ghost btn--sm" onClick={() => setDisagreeOpen(true)}>
@@ -402,7 +410,7 @@ function Decisions({ a }: { a: Assumption }) {
             </p>
             <p className="small"><Link2 size={12} aria-hidden className="inline-icon" /> Affects: {d.impact}</p>
           </div>
-          <button className="btn btn--secondary" onClick={() => setReviewing(d.id)}>Review decision</button>
+          <button className="btn btn--secondary" onClick={() => { trackEvent('Decision Review Opened', { source: 'detail', decision: d.id }, 'detail'); setReviewing(d.id); }}>Review decision</button>
         </article>
       ))}
       {reviewing && <DecisionReviewPanel decisionId={reviewing} onClose={() => setReviewing(null)} />}

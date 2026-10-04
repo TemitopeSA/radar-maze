@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { ArrowDown, ArrowUp, FileUp, PenLine, Plus, Search, X } from 'lucide-react';
 import { countByStatus, useStore, type SortKey } from '../../state/store';
 import { formatDate, formatRelative } from '../../data/format';
@@ -22,7 +23,8 @@ export function AssumptionsPage() {
   const { filters } = state;
   const counts = countByStatus(state.assumptions);
 
-  const open = (id: string) => {
+  const open = (id: string, source: 'table' | 'radar' | 'list') => {
+    trackEvent('Assumption Opened', { source, hero: id === HERO_ID }, `${source}-${id === HERO_ID ? 'hero' : 'other'}`);
     dispatch({ type: 'openAssumption', id });
     if (id === HERO_ID) tour.signal('open-hero');
   };
@@ -101,7 +103,7 @@ export function AssumptionsPage() {
             <button
               key={s}
               className={`tile tile--${STATUS_META[s].className} ${filters.status === s ? 'is-selected' : ''}`}
-              onClick={() => dispatch({ type: 'setFilters', filters: { status: filters.status === s ? 'all' : s } })}
+              onClick={() => { trackEvent('Assumptions Filtered', { by: 'tile' }, 'tile'); dispatch({ type: 'setFilters', filters: { status: filters.status === s ? 'all' : s } }); }}
               aria-pressed={filters.status === s}
             >
               <span className="tile__label"><Icon size={14} aria-hidden /> {s}</span>
@@ -120,7 +122,7 @@ export function AssumptionsPage() {
               <p className="card__sub">Healthy assumptions tend to be recently validated and high-confidence. Low-confidence or long-unvalidated assumptions deserve a closer look.</p>
             </div>
           </div>
-          <AssumptionRadarChart assumptions={state.assumptions} onSelect={open} />
+          <AssumptionRadarChart assumptions={state.assumptions} onSelect={(id) => open(id, 'radar')} />
         </div>
         <aside className="radar-card__side">
           <h3 className="side-title">Legend</h3>
@@ -140,7 +142,7 @@ export function AssumptionsPage() {
               .slice(0, 4)
               .map((a) => (
                 <li key={a.id}>
-                  <button className="attention-item" onClick={() => open(a.id)}>
+                  <button className="attention-item" onClick={() => open(a.id, 'list')}>
                     <ShapeIcon status={a.status} />
                     <span>
                       <span className="attention-item__text">{a.statement}</span>
@@ -166,17 +168,18 @@ export function AssumptionsPage() {
                 aria-label="Search assumptions"
                 value={filters.query}
                 onChange={(e) => dispatch({ type: 'setFilters', filters: { query: e.target.value } })}
+                onBlur={(e) => e.target.value && trackEvent('Assumptions Searched', { length: e.target.value.length })}
               />
             </label>
-            <select className="select" aria-label="Filter by status" value={filters.status} onChange={(e) => dispatch({ type: 'setFilters', filters: { status: e.target.value as Status | 'all' } })}>
+            <select className="select" aria-label="Filter by status" value={filters.status} onChange={(e) => { trackEvent('Assumptions Filtered', { by: 'status' }, 'status'); dispatch({ type: 'setFilters', filters: { status: e.target.value as Status | 'all' } }); }}>
               <option value="all">All statuses</option>
               {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select className="select" aria-label="Filter by category" value={filters.category} onChange={(e) => dispatch({ type: 'setFilters', filters: { category: e.target.value as Category | 'all' } })}>
+            <select className="select" aria-label="Filter by category" value={filters.category} onChange={(e) => { trackEvent('Assumptions Filtered', { by: 'category' }, 'category'); dispatch({ type: 'setFilters', filters: { category: e.target.value as Category | 'all' } }); }}>
               <option value="all">All categories</option>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            <select className="select" aria-label="Sort assumptions" value={filters.sort} onChange={(e) => dispatch({ type: 'setFilters', filters: { sort: e.target.value as SortKey } })}>
+            <select className="select" aria-label="Sort assumptions" value={filters.sort} onChange={(e) => { trackEvent('Assumptions Sorted', { sort: e.target.value }, e.target.value); dispatch({ type: 'setFilters', filters: { sort: e.target.value as SortKey } }); }}>
               <option value="default">Sort: Needs attention</option>
               <option value="confidence-asc">Confidence: low to high</option>
               <option value="confidence-desc">Confidence: high to low</option>
@@ -217,8 +220,8 @@ export function AssumptionsPage() {
                     data-tour={hero ? 'hero-row' : undefined}
                     tabIndex={0}
                     aria-label={`Open assumption: ${a.statement}`}
-                    onClick={() => open(a.id)}
-                    onKeyDown={(e) => e.key === 'Enter' && open(a.id)}
+                    onClick={() => open(a.id, 'table')}
+                    onKeyDown={(e) => e.key === 'Enter' && open(a.id, 'table')}
                   >
                     <td className="cell-statement">
                       <div className="cell-title">{a.statement}</div>

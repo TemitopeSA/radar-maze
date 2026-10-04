@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { Check, Compass, Eye, FlaskConical, GitBranch, Radar, RotateCcw, Target } from 'lucide-react';
 import { useStore } from '../../state/store';
 import { HERO_ID } from '../../data/seed';
@@ -59,6 +60,10 @@ export function WrapUpPage() {
     return `M${p0.x},${p0.y} A${R},${R} 0 0 1 ${p1.x},${p1.y}`;
   };
   const stage = STAGES[selected];
+  const selectStage = (i: number) => {
+    trackEvent('Loop Stage Viewed', { stage: STAGES[i].id }, STAGES[i].id);
+    setSelected(i);
+  };
 
   return (
     <div className="page">
@@ -97,7 +102,7 @@ export function WrapUpPage() {
                   key={s.id}
                   className={`loop__node ${done[s.id] ? 'is-done' : ''} ${selected === i ? 'is-selected' : ''}`}
                   style={{ left: p.x, top: p.y }}
-                  onClick={() => setSelected(i)}
+                  onClick={() => selectStage(i)}
                   aria-pressed={selected === i}
                   aria-label={`${i + 1}. ${s.label}${done[s.id] ? ', completed' : ''}`}
                 >
@@ -110,7 +115,7 @@ export function WrapUpPage() {
           <ol className="loop-list">
             {STAGES.map((s, i) => (
               <li key={s.id} className={`loop-list__item ${selected === i ? 'is-selected' : ''} ${done[s.id] ? 'is-done' : ''}`}>
-                <button onClick={() => setSelected(i)}>
+                <button onClick={() => selectStage(i)}>
                   <span className="loop-list__num">{i + 1}</span>
                   <span>
                     <strong>{s.label}:</strong> <span className="muted">{s.recap}</span>
@@ -128,13 +133,14 @@ export function WrapUpPage() {
             <p>{story[stage.id]}</p>
           </div>
           <div className="wrap__actions">
-            <button className="btn btn--secondary" onClick={() => tour.openWelcome('restart')}>
+            <button className="btn btn--secondary" onClick={() => { trackEvent('Restart Tour Clicked', { source: 'wrap-up' }); tour.openWelcome('restart'); }}>
               <RotateCcw size={16} aria-hidden /> Restart tour
             </button>
             <button
               className="btn btn--primary"
               onClick={() => {
-                tour.skip();
+                tour.skip('explore');
+                trackEvent('Explore Freely', { source: 'wrap-up' });
                 dispatch({ type: 'navigate', screen: 'assumptions' });
               }}
             >

@@ -91,13 +91,16 @@ export function TourOverlay() {
     };
   }, [tour.active, step.target, tour.index]);
 
+  // Measure the card so placement can keep it on screen; content changes per step resize it.
   useLayoutEffect(() => {
     const el = cardRef.current;
-    if (!el) return;
-    const w = el.offsetWidth;
-    const h = el.offsetHeight;
-    if (w !== cardSize.w || h !== cardSize.h) setCardSize({ w, h });
-  });
+    if (!tour.active || !el) return;
+    const update = () => setCardSize((s) => (s.w === el.offsetWidth && s.h === el.offsetHeight ? s : { w: el.offsetWidth, h: el.offsetHeight }));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [tour.active]);
 
   // Move focus into the card whenever the step changes.
   useEffect(() => {
@@ -106,7 +109,9 @@ export function TourOverlay() {
 
   // Keyboard shortcuts, attached once per activation.
   const tourRef = useRef(tour);
-  tourRef.current = tour;
+  useLayoutEffect(() => {
+    tourRef.current = tour;
+  });
   useEffect(() => {
     if (!tour.active) return;
     const onKey = (e: KeyboardEvent) => {
@@ -117,7 +122,7 @@ export function TourOverlay() {
       const inCard = !!el && !!cardRef.current?.contains(el);
       if (e.key === 'Escape') {
         e.preventDefault();
-        t.skip();
+        t.skip('escape');
       } else if (typing) {
         return;
       } else if (e.key === 'ArrowRight') {
@@ -189,7 +194,7 @@ export function TourOverlay() {
       >
         <div className="tour__meta">
           <span className="kicker kicker--blue">Step {tour.index + 1} of {total}</span>
-          <button className="link-btn link-btn--muted" onClick={tour.skip}>Skip tour</button>
+          <button className="link-btn link-btn--muted" onClick={() => tour.skip()}>Skip tour</button>
         </div>
         <div className="tour__progress" aria-hidden>
           <span style={{ width: `${((tour.index + 1) / total) * 100}%` }} />

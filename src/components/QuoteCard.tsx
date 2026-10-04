@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackEvent } from '../analytics';
 import { Play, Video } from 'lucide-react';
 import type { Quote, Study, Theme } from '../data/types';
 import { formatDate } from '../data/format';
@@ -26,7 +27,7 @@ export function QuoteCard({ quote, study }: { quote: Quote; study?: Study }) {
           {study && <div className="quote__study">{study.name}</div>}
         </div>
         {quote.transcript && (
-          <button className="btn btn--secondary btn--sm" onClick={() => setOpen(true)} aria-label={`View clip from ${quote.participant}`}>
+          <button className="btn btn--secondary btn--sm" onClick={() => { trackEvent('Clip Viewed', { quote: quote.id, era: quote.era }, quote.era); setOpen(true); }} aria-label={`View clip from ${quote.participant}`}>
             <Play size={14} aria-hidden /> View clip
           </button>
         )}

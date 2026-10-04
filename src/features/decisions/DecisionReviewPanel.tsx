@@ -1,4 +1,5 @@
 import { Flag, Link2 } from 'lucide-react';
+import { trackEvent } from '../../analytics';
 import { Modal } from '../../components/Modal';
 import { useToast } from '../../components/Toast';
 import { DecisionBadge, Owner, StatusBadge } from '../../components/ui';
@@ -39,6 +40,7 @@ export function DecisionReviewPanel({ decisionId, onClose }: { decisionId: strin
             disabled={decision.status === 'Needs review'}
             onClick={() => {
               dispatch({ type: 'decision/markReview', id: decision.id });
+              trackEvent('Decision Marked For Review', { decision: decision.id });
               toast(`${decision.owner.name} will see this in their review queue.`);
             }}
           >

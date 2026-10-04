@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { ArrowRight, Bot, ClipboardList, LayoutGrid, MousePointerClick, Radar } from 'lucide-react';
 import { useStore, countByStatus } from '../../state/store';
 import { formatDate } from '../../data/format';
@@ -25,6 +26,10 @@ export function HomePage() {
   const [preview, setPreview] = useState<Study | null>(null);
   const counts = countByStatus(state.assumptions);
   const attention = counts.Drifting;
+  const openPreview = (s: Study) => {
+    trackEvent('Study Preview Opened', { study: s.id });
+    setPreview(s);
+  };
   const studies = [...state.studies].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
@@ -49,7 +54,7 @@ export function HomePage() {
               : 'No drifting assumptions right now. Maze will let you know when the evidence changes.'}
           </p>
         </div>
-        <button className="btn btn--primary" onClick={() => dispatch({ type: 'navigate', screen: 'assumptions' })}>
+        <button className="btn btn--primary" onClick={() => { trackEvent('Home Alert Clicked', { attention }); dispatch({ type: 'navigate', screen: 'assumptions' }); }}>
           Review in Assumptions <ArrowRight size={16} aria-hidden />
         </button>
       </section>
@@ -90,7 +95,7 @@ export function HomePage() {
             </thead>
             <tbody>
               {studies.map((s) => (
-                <tr key={s.id} className="table__row" tabIndex={0} onClick={() => setPreview(s)} onKeyDown={(e) => e.key === 'Enter' && setPreview(s)}>
+                <tr key={s.id} className="table__row" tabIndex={0} onClick={() => openPreview(s)} onKeyDown={(e) => e.key === 'Enter' && openPreview(s)}>
                   <td>
                     <div className="cell-title">{s.name}</div>
                     <div className="cell-sub">{formatDate(s.date)}{s.simulated && ' · Simulated'}</div>

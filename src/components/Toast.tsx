@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { trackEvent } from '../analytics';
 import { CircleCheck, Info, X } from 'lucide-react';
 
 type ToastKind = 'success' | 'info';
@@ -14,6 +15,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const show = useCallback(
     (message: string, kind: ToastKind = 'success') => {
+      if (kind === 'info' && /coming soon|outside this concept/i.test(message)) {
+        const feature = message.split(/[:.]/)[0].replace(/^In this concept, /, '').slice(0, 40);
+        trackEvent('Out Of Scope Click', { feature }, feature);
+      }
       const tid = ++id.current;
       setToasts((t) => [...t.slice(-2), { id: tid, message, kind }]);
       window.setTimeout(() => dismiss(tid), 4200);

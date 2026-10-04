@@ -82,7 +82,8 @@ export function ConfidenceChart({ assumption }: { assumption: Assumption }) {
                   height={ih}
                   fill="transparent"
                   tabIndex={0}
-                  role="presentation"
+                  role="img"
+                  aria-label={`${p.label}: confidence ${p.v}`}
                   onMouseEnter={() => setHover(i)}
                   onFocus={() => setHover(i)}
                   onBlur={() => setHover(null)}

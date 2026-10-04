@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { trackEvent } from '../../analytics';
 import { CircleCheck, FastForward, LoaderCircle } from 'lucide-react';
 import { useStore } from '../../state/store';
 import { PageHeader } from '../../components/PageHeader';
@@ -63,7 +64,7 @@ export function ResearchProgress() {
         <div className="progress-card__foot">
           <span className="muted small">Simulated study. No real participants are being contacted.</span>
           {!done && (
-            <button className="btn btn--secondary" onClick={() => dispatch({ type: 'research/complete' })}>
+            <button className="btn btn--secondary" onClick={() => { trackEvent('Research Skipped Ahead', { responses: research.responses }); dispatch({ type: 'research/complete' }); }}>
               <FastForward size={16} aria-hidden /> Skip ahead
             </button>
           )}

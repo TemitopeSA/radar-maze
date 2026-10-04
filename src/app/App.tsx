@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { trackView } from '../analytics';
+import { HERO_ID } from '../data/seed';
 import { StoreProvider, useStore } from '../state/store';
 import { ToastProvider } from '../components/Toast';
 import { Sidebar } from '../components/Sidebar';
@@ -15,18 +17,19 @@ import { GuideButton, WelcomeModal } from '../features/tour/TourChrome';
 
 function Screen() {
   const { state } = useStore();
-  const mainRef = useRef<HTMLElement>(null);
   const key = `${state.screen}:${state.screen === 'detail' ? state.selectedId : ''}`;
 
-  // Start each screen at the top, like a page navigation would.
+  // Start each screen at the top and report it as a virtual pageview.
   useEffect(() => {
     window.scrollTo({ top: 0 });
+    const [screen, id] = key.split(':');
+    trackView(screen === 'detail' ? `/app/assumption/${id === HERO_ID ? 'pricing-hero' : 'other'}` : `/app/${screen}`);
   }, [key]);
 
   useResearchSimulation();
 
   return (
-    <main ref={mainRef} className="main" id="main" key={key}>
+    <main className="main" id="main" key={key}>
       {state.screen === 'home' && <HomePage />}
       {state.screen === 'assumptions' && <AssumptionsPage />}
       {state.screen === 'detail' && <AssumptionDetailPage />}

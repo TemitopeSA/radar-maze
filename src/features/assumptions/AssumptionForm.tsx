@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { Modal } from '../../components/Modal';
 import { useToast } from '../../components/Toast';
 import { useStore } from '../../state/store';
@@ -20,6 +21,7 @@ export function AssumptionForm({ onClose }: { onClose: () => void }) {
     setTouched(true);
     if (error) return;
     dispatch({ type: 'addAssumptions', items: [{ statement: statement.trim(), category, ownerName: owner, confidence, expiresOn: expires || null }] });
+    trackEvent('Assumption Added', { category, confidence });
     toast('Assumption added. It starts as Untested until you link evidence.');
     onClose();
   };

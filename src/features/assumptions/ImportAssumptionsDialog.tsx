@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { trackEvent } from '../../analytics';
 import { FileText, LoaderCircle, Sparkles } from 'lucide-react';
 import { Modal } from '../../components/Modal';
 import { useToast } from '../../components/Toast';
@@ -29,6 +30,7 @@ export function ImportAssumptionsDialog({ onClose }: { onClose: () => void }) {
 
   const confirm = () => {
     dispatch({ type: 'addAssumptions', items: selected.map((d) => ({ statement: d.statement.trim(), category: d.category, ownerName: 'Leo Martins', confidence: d.confidence, expiresOn: null })) });
+    trackEvent('Assumptions Imported', { count: selected.length }, String(selected.length));
     toast(`${selected.length} assumption${selected.length === 1 ? '' : 's'} imported from your doc.`);
     onClose();
   };
@@ -64,7 +66,7 @@ export function ImportAssumptionsDialog({ onClose }: { onClose: () => void }) {
           <div className="field">
             <div className="field__label-row">
               <label htmlFor="doc-text" className="field__label">Document text</label>
-              <button className="link-btn" onClick={() => setText(SAMPLE_PRD)}>
+              <button className="link-btn" onClick={() => { trackEvent('Sample PRD Loaded'); setText(SAMPLE_PRD); }}>
                 <FileText size={14} aria-hidden /> Load sample PRD
               </button>
             </div>
