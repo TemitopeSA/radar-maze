@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assumption Radar · Case Study</title>
+<meta name="description" content="A concept case study for Maze: Assumption Radar tracks the beliefs a roadmap rests on, flags when the evidence turns, and launches a re-test in one click.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Assumption Radar · A concept case study for Maze">
+<meta property="og:description" content="Know when your product bets stop being true. Problem, prototype walkthrough, business case and a 6-week pilot plan.">
+<meta property="og:image" content="https://radar-maze.vercel.app/case-study/shots/overview.jpg">
+<meta property="og:url" content="https://radar-maze.vercel.app/case-study/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: long-form case study, 1120px column, alternating plain / tinted bands, product shots framed as Maze app windows */
+:root{
+  --bg:#ffffff; --band:#f8f8fb; --surface:#ffffff; --line:#e8e8f1; --line-strong:#cdcedd;
+  --fg:#282d40; --fg-2:#535a74; --muted:#6c718c;
+  --accent:#0568fd; --accent-hover:#034fd6; --on-accent:#ffffff; --accent-soft:#f0faff; --accent-line:#ceeeff;
+  --ai:#5247c8; --ai-soft:#f9f7ff; --ai-line:#e7e7ff;
+  --ok:#00673c; --ok-soft:#ebfcfa; --ok-line:#bcfae0; --ok-dot:#158053;
+  --warn:#8c5400; --warn-soft:#fff9ed; --warn-line:#ffeed1; --warn-dot:#d29615;
+  --bad:#a4313c; --bad-soft:#fff6f8; --bad-line:#fee3e5; --bad-dot:#cc3f4d;
+  --ink-band:#012577; --ink-band-fg:#f0faff; --ink-band-muted:#9ad6ff;
+  --shadow:0 1px 2px rgba(40,45,64,.06),0 8px 24px rgba(40,45,64,.08);
+  /* product-shot tokens: the screens stay a light Maze UI in both themes */
+  --s-bg:#f8f8fb; --s-surface:#ffffff; --s-line:#e8e8f1; --s-fg:#282d40; --s-muted:#6c718c; --s-faint:#9597b0;
+  --s-blue:#0568fd; --s-blue-soft:#f0faff; --s-ai:#5247c8; --s-ai-soft:#f9f7ff; --s-ai-line:#e7e7ff;
+  --s-ok:#00673c; --s-ok-soft:#ebfcfa; --s-okd:#158053; --s-warn:#8c5400; --s-warn-soft:#fff9ed; --s-warnd:#d29615;
+  --s-bad:#a4313c; --s-bad-soft:#fff6f8; --s-badd:#cc3f4d; --s-neu-soft:#e8e8f1;
+  --f-display:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141725; --band:#1a1e2f; --surface:#1f2436; --line:#2d3349; --line-strong:#3d425a;
+  --fg:#eceef6; --fg-2:#c3c6d6; --muted:#9597b0;
+  --accent:#3b9fec; --accent-hover:#9ad6ff; --on-accent:#0b1a3d; --accent-soft:#0f2240; --accent-line:#1b3a6b;
+  --ai:#928bff; --ai-soft:#1f1c3f; --ai-line:#2e2a5e;
+  --ok:#87deba; --ok-soft:#0f2a22; --ok-line:#1c4636; --ok-dot:#38a97a;
+  --warn:#fcd78d; --warn-soft:#2b2210; --warn-line:#4a3a17; --warn-dot:#d29615;
+  --bad:#fcc0c3; --bad-soft:#2d1519; --bad-line:#4d2129; --bad-dot:#f86c74;
+  --ink-band:#0b1a3d; --ink-band-fg:#f0faff; --ink-band-muted:#9ad6ff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141725; --band:#1a1e2f; --surface:#1f2436; --line:#2d3349; --line-strong:#3d425a;
+  --fg:#eceef6; --fg-2:#c3c6d6; --muted:#9597b0;
+  --accent:#3b9fec; --accent-hover:#9ad6ff; --on-accent:#0b1a3d; --accent-soft:#0f2240; --accent-line:#1b3a6b;
+  --ai:#928bff; --ai-soft:#1f1c3f; --ai-line:#2e2a5e;
+  --ok:#87deba; --ok-soft:#0f2a22; --ok-line:#1c4636; --ok-dot:#38a97a;
+  --warn:#fcd78d; --warn-soft:#2b2210; --warn-line:#4a3a17; --warn-dot:#d29615;
+  --bad:#fcc0c3; --bad-soft:#2d1519; --bad-line:#4d2129; --bad-dot:#f86c74;
+  --ink-band:#0b1a3d; --ink-band-fg:#f0faff; --ink-band-muted:#9ad6ff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:24px}
+@media (max-width:600px){.wrap{padding-inline:16px}body{font-size:16px}}
+section{padding-block:96px}
+@media (max-width:700px){section{padding-block:64px}}
+.band{background:var(--band)}
+h1,h2,h3,h4{font-family:var(--f-display);color:var(--fg);text-wrap:balance;margin:0}
+h1{font-size:clamp(44px,7vw,84px);line-height:1;font-weight:800;letter-spacing:-.035em}
+h2{font-size:clamp(30px,4.2vw,46px);line-height:1.08;font-weight:800;letter-spacing:-.025em}
+h3{font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+h4{font-size:16px;font-weight:700}
+p{margin:0}
+.lede{font-size:clamp(19px,2vw,22px);line-height:1.5;color:var(--fg-2);max-width:62ch}
+.prose{max-width:66ch;color:var(--fg-2)}
+.prose p+p{margin-top:16px}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.sec-head{display:grid;gap:16px;margin-bottom:48px;max-width:760px}
+.sec-head .lede{margin-top:4px}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--fg);text-decoration:none}
+.brand-mark{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.brand-mark svg{display:block}
+.topnav{display:flex;gap:22px;font-size:14px}
+.topnav a{color:var(--fg-2);text-decoration:none}
+.topnav a:hover{color:var(--accent)}
+@media (max-width:860px){.topnav{display:none}}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:600;font-size:15px;padding:11px 18px;border-radius:8px;text-decoration:none;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hover);color:var(--on-accent)}
+.btn-ghost{border-color:var(--line-strong);color:var(--fg)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:8px 14px;font-size:14px}
+
+/* hero */
+.hero{padding-block:72px 40px}
+.hero-grid{display:grid;gap:28px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14px;color:var(--muted);font-family:var(--f-mono)}
+.hero-meta span{display:inline-flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block}
+.hero h1 .soft{color:var(--accent)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.quote-strip{margin-top:20px;border-left:3px solid var(--accent);padding:4px 0 4px 18px;max-width:640px}
+.quote-strip q{font-size:19px;font-style:italic;color:var(--fg);quotes:"\201C" "\201D"}
+.quote-strip cite{display:block;margin-top:6px;font-style:normal;font-size:14px;color:var(--muted)}
+.hero-shot{margin-top:56px}
+
+/* product window */
+.shot{border-radius:14px;border:1px solid var(--line);background:var(--s-bg);box-shadow:var(--shadow);overflow:hidden;color:var(--s-fg);font-family:var(--f-body)}
+.shot-scroll{overflow-x:auto}
+.shot-chrome{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s-surface);border-bottom:1px solid var(--s-line)}
+.shot-chrome i{width:10px;height:10px;border-radius:50%;background:var(--s-neu-soft);display:block}
+.shot-url{margin-left:12px;font-family:var(--f-mono);font-size:11.5px;color:var(--s-muted);background:var(--s-bg);border:1px solid var(--s-line);border-radius:6px;padding:3px 10px}
+.app{display:grid;grid-template-columns:56px 1fr;min-width:760px}
+.app-side{background:var(--s-surface);border-right:1px solid var(--s-line);display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0}
+.side-logo{width:28px;height:28px;border-radius:8px;background:var(--s-blue)}
+.side-ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--s-faint);position:relative}
+.side-ico.on{background:var(--s-blue-soft);color:var(--s-blue)}
+.side-ico.new::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--s-blue);border:2px solid var(--s-surface)}
+.app-main{padding:20px 22px 24px;min-width:0}
+.app-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.app-title{font-size:20px;font-weight:700;color:var(--s-fg);letter-spacing:-.01em}
+.app-sub{font-size:12.5px;color:var(--s-muted)}
+.s-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:var(--s-blue);color:#fff;white-space:nowrap}
+.s-btn.ghost{background:var(--s-surface);color:var(--s-fg);border:1px solid var(--s-line)}
+.s-card{background:var(--s-surface);border:1px solid var(--s-line);border-radius:8px;box-shadow:0 1px 2px rgba(40,45,64,.05)}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.tile{padding:12px 14px}
+.tile b{display:block;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile span{font-size:11.5px;color:var(--s-muted);display:flex;align-items:center;gap:6px}
+.sw{width:8px;height:8px;border-radius:2px;display:inline-block}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.b-ok{background:var(--s-ok-soft);color:var(--s-ok)}
+.b-warn{background:var(--s-warn-soft);color:var(--s-warn)}
+.b-bad{background:var(--s-bad-soft);color:var(--s-bad)}
+.b-neu{background:var(--s-neu-soft);color:var(--s-muted)}
+.b-ai{background:var(--s-ai-soft);color:var(--s-ai);border:1px solid var(--s-ai-line)}
+.b-new{background:var(--s-blue-soft);color:var(--s-blue)}
+.split{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.s-table{width:100%;border-collapse:collapse;font-size:12px}
+.s-table th{font-weight:600;color:var(--s-muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--s-line);font-size:11px}
+.s-table td{padding:9px 10px;border-bottom:1px solid var(--s-line);vertical-align:middle}
+.s-table tr:last-child td{border-bottom:0}
+.s-table tr.hl td{background:var(--s-warn-soft)}
+.av{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:700;color:#fff;background:#6b5bee;vertical-align:middle}
+.card-h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--s-line);font-size:12.5px;font-weight:600}
+.card-h small{font-weight:500;color:var(--s-muted)}
+.s-svg text{font-family:var(--f-body)}
+.why{background:var(--s-ai-soft);border:1px solid var(--s-ai-line);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--s-fg)}
+.why h5{margin:0 0 6px;font-size:12.5px;color:var(--s-ai);display:flex;align-items:center;gap:6px}
+.why .acts{display:flex;gap:8px;margin-top:10px}
+.mini-btn{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--s-line);background:var(--s-surface);color:var(--s-fg)}
+.quote-c{padding:10px 12px;border:1px solid var(--s-line);border-radius:8px;background:var(--s-surface);font-size:12px}
+.quote-c p{color:var(--s-fg)}
+.quote-c small{display:block;margin-top:6px;color:var(--s-muted);font-size:10.5px}
+.qcol h6{margin:0 0 8px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--s-muted);font-weight:600}
+.qcol{display:grid;gap:8px;align-content:start}
+
+/* annotated walkthrough */
+.steps{display:grid;gap:96px}
+.step{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:48px;align-items:start}
+.step:nth-child(even){grid-template-columns:minmax(0,1fr) minmax(0,340px)}
+.step:nth-child(even) .step-copy{order:2}
+@media (max-width:980px){.step,.step:nth-child(even){grid-template-columns:1fr;gap:24px}.step:nth-child(even) .step-copy{order:0}}
+.step-copy{display:grid;gap:14px;position:sticky;top:96px}
+@media (max-width:980px){.step-copy{position:static}}
+.step-no{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.stage-chip{font-family:var(--f-mono);font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent);letter-spacing:.04em}
+.step-copy p{color:var(--fg-2)}
+.step-copy ul{margin:0;padding-left:18px;color:var(--fg-2);display:grid;gap:6px;font-size:15.5px}
+.step-copy li::marker{color:var(--accent)}
+
+/* generic layout pieces */
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.grid-3,.grid-2{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:10px;align-content:start}
+.panel p{color:var(--fg-2);font-size:15.5px}
+.panel .tag{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.tldr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.tldr > div{padding:24px;display:grid;gap:8px;align-content:start;border-right:1px solid var(--line)}
+.tldr > div:last-child{border-right:0}
+.tldr h4{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.tldr p{font-size:15.5px;color:var(--fg-2)}
+.tldr strong{color:var(--fg)}
+@media (max-width:900px){.tldr{grid-template-columns:1fr 1fr}.tldr > div:nth-child(2){border-right:0}.tldr > div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@media (max-width:560px){.tldr{grid-template-columns:1fr}.tldr > div{border-right:0;border-bottom:1px solid var(--line)}.tldr > div:last-child{border-bottom:0}}
+
+.figure{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;overflow-x:auto}
+.figure svg{display:block;width:100%;height:auto}
+.figcap{margin-top:14px;font-size:14px;color:var(--muted);max-width:70ch}
+.fig-svg text{font-family:var(--f-body);fill:var(--fg-2)}
+.fig-svg .t-strong{fill:var(--fg);font-weight:700}
+.fig-svg .t-on{fill:var(--on-accent)}
+.fig-svg .t-mono{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;fill:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.stats{grid-template-columns:1fr 1fr}}
+.stat{border-top:2px solid var(--fg);padding-top:14px;display:grid;gap:6px;align-content:start}
+.stat b{font-family:var(--f-display);font-size:44px;line-height:1;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat span{font-size:14.5px;color:var(--fg-2)}
+.src{font-size:13px;color:var(--muted);margin-top:24px}
+
+.ink{background:var(--ink-band);color:var(--ink-band-fg)}
+.ink h2,.ink h3{color:var(--ink-band-fg)}
+.ink .kicker{color:var(--ink-band-muted)}
+.ink .lede,.ink p{color:color-mix(in srgb,var(--ink-band-fg) 82%,transparent)}
+.ink .btn-primary,.ink .btn-primary:hover{background:#ffffff;color:#012577}
+.big-quote{font-family:var(--f-display);font-size:clamp(28px,4vw,44px);line-height:1.15;font-weight:700;letter-spacing:-.02em;max-width:26ch;color:var(--ink-band-fg)}
+
+.reuse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.reuse{grid-template-columns:1fr 1fr}}
+.reuse-item{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);display:grid;gap:4px}
+.reuse-item b{font-size:15px}
+.reuse-item span{font-size:13.5px;color:var(--muted)}
+.reuse-item.exists{border-color:var(--accent-line);background:var(--accent-soft)}
+.reuse-item.newpart{border-style:dashed;border-color:var(--ai);background:var(--ai-soft)}
+.reuse-item .flag{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.reuse-item.newpart .flag{color:var(--ai)}
+
+.cmp{width:100%;border-collapse:collapse;font-size:15px;min-width:640px}
+.cmp th,.cmp td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp thead th{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cmp td:first-child{font-weight:600;color:var(--fg)}
+.cmp td{color:var(--fg-2)}
+.cmp tr.us td{background:var(--accent-soft)}
+.cmp tr.us td:first-child{color:var(--accent)}
+.table-box{border:1px solid var(--line);border-radius:12px;overflow-x:auto;background:var(--surface)}
+
+.roadmap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;position:relative}
+@media (max-width:860px){.roadmap{grid-template-columns:1fr}}
+.rm{padding:0 20px 0 0;display:grid;gap:10px;align-content:start;position:relative}
+.rm-bar{height:6px;border-radius:3px;background:var(--line);margin-bottom:10px;position:relative}
+.rm.done .rm-bar{background:var(--accent)}
+.rm-when{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.rm p{font-size:15px;color:var(--fg-2)}
+.rm ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--fg-2);display:grid;gap:4px}
+@media (max-width:860px){.rm{padding:0 0 28px 0}}
+
+.metric-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.metric-row:last-child{border-bottom:0}
+.metric-row b{font-weight:600}
+.metric-row span{font-size:14.5px;color:var(--muted)}
+.metric-row em{font-style:normal;font-family:var(--f-mono);font-size:13px;color:var(--accent);white-space:nowrap}
+
+.cta{display:grid;gap:22px;justify-items:start}
+.foot{padding-block:40px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+
+
+.browser{border-radius:14px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.browser img{display:block;width:100%;height:auto}
+.browser .shot-chrome{background:var(--surface);border-bottom:1px solid var(--line)}
+.browser .shot-chrome i{background:var(--line-strong)}
+.browser .shot-url{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;background:var(--band);border-color:var(--line);color:var(--muted)}
+.crop{border-radius:12px;border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow);background:#f8f8fb}
+.crop img{display:block;width:100%;height:auto}
+.pair{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:700px){.pair{grid-template-columns:1fr}}
+.shot-label{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.ba{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:700px){.ba{grid-template-columns:1fr}}
+.ba-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.ba-tag.before{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
+.ba-tag.after{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.who{grid-template-columns:1fr}}
+.who .panel h3{font-size:19px}
+.who .role{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.who ul{margin:4px 0 0;padding-left:18px;color:var(--fg-2);font-size:15px;display:grid;gap:6px}
+@media (prefers-reduced-motion:no-preference){
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .draw{stroke-dasharray:600;stroke-dashoffset:0;animation:draw 2.2s ease-out both}
+  @keyframes draw{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Assumption Radar, back to top">
+      <span class="brand-mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="#fff" stroke-width="1.5" opacity=".55"/><circle cx="8" cy="8" r="3.5" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="11.6" cy="5" r="1.6" fill="#fff"/></svg></span>
+      Assumption Radar
+    </a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#problem">Problem</a>
+      <a href="#gap">The gap</a>
+      <a href="#product">Product</a>
+      <a href="#business">Business case</a>
+      <a href="#next">Next steps</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="https://radar-maze.vercel.app/" target="_blank" rel="noopener">Try the prototype</a>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-meta">
+        <span><i class="dot pulse"></i>Concept case study</span>
+        <span>Prepared for the Maze leadership team</span>
+        <span>October 2026</span>
+      </div>
+      <h1>Know when your product bets <span class="soft">stop being true.</span></h1>
+      <p class="lede">Assumption Radar is a concept for a new layer inside Maze. It keeps a living record of the beliefs a roadmap rests on, watches the research for signs they're weakening, and turns any doubt into a ready-to-launch study in one click.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://radar-maze.vercel.app/" target="_blank" rel="noopener">Open the live prototype
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 10L10 4M5 4h5v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn btn-ghost" href="#product">See the walkthrough</a>
+      </div>
+      <div class="quote-strip">
+        <q>Dead reckoning works when the water is calm. But how do you know when it isn't?</q>
+        <cite>Jonathan Widawski, Co-founder &amp; CEO, Maze (LinkedIn, April 2026)</cite>
+      </div>
+    </div>
+
+    <figure class="hero-shot" style="margin-inline:0;margin-bottom:0">
+      <div class="browser">
+        <div class="shot-chrome" aria-hidden="true"><i></i><i></i><i></i><span class="shot-url">radar-maze.vercel.app · Assumptions</span></div>
+        <img src="shots/overview.jpg" width="1440" height="900" alt="The Assumptions page in the prototype: summary tiles (14 tracked, 8 holding, 3 drifting, 2 expired, 1 untested) above a radar chart plotting confidence against time since last validated, with a drifting assumption highlighted.">
+      </div>
+      <figcaption class="figcap">The Assumptions overview in the live prototype. Lumen is a fictional fintech created for the demo, and all of its data is illustrative.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- TLDR -->
+<section style="padding-top:24px">
+  <div class="wrap">
+    <div class="tldr">
+      <div><h4>The problem</h4><p>Roadmaps rest on assumptions that are <strong>set once and never revisited</strong>. Teams find out they've drifted when the metrics drop.</p></div>
+      <div><h4>The idea</h4><p>A living register of assumptions, scored by Maze's own evidence, that <strong>flags drift and launches a re-test</strong> in one click.</p></div>
+      <div><h4>Why Maze</h4><p>It makes the <strong>Baseline and Monitor stages</strong> of the system of learning real, using parts Maze has already built.</p></div>
+      <div><h4>The ask</h4><p>A 30-minute walkthrough with product leadership, then a <strong>6-week pilot</strong> with 5 design partners.</p></div>
+    </div>
+  </div>
+</section>
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The problem</span>
+      <h2>Good decisions go stale quietly.</h2>
+      <p class="lede">Every roadmap is built on beliefs about customers, markets and products. They're true when they're made. Then conditions shift, and nobody re-checks them until the results show up.</p>
+    </div>
+
+    <div class="figure">
+      <svg class="fig-svg" viewBox="0 0 1000 360" role="img" aria-label="Diagram: a planned course and an actual course start together and slowly diverge across four quarters. Without Radar the error is only seen in Q4. With Radar, drift is flagged in Q2.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+        </defs>
+        <!-- timeline -->
+        <line x1="60" y1="318" x2="960" y2="318" stroke="var(--line-strong)" stroke-width="1"/>
+        <g class="t-mono" text-anchor="middle"><text x="120" y="342">Q1</text><text x="360" y="342">Q2</text><text x="600" y="342">Q3</text><text x="860" y="342">Q4</text></g>
+        <g stroke="var(--line-strong)"><line x1="120" y1="312" x2="120" y2="324"/><line x1="360" y1="312" x2="360" y2="324"/><line x1="600" y1="312" x2="600" y2="324"/><line x1="860" y1="312" x2="860" y2="324"/></g>
+        <!-- planned -->
+        <path d="M80 200 L 940 120" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="946" y="112" text-anchor="end" font-size="14" class="t-strong">Where you think you are</text>
+        <!-- actual -->
+        <path class="draw" d="M80 200 C 300 182, 500 196, 700 230 S 900 280, 940 286" fill="none" stroke="var(--bad-dot)" stroke-width="3"/>
+        <text x="946" y="306" text-anchor="end" font-size="14" class="t-strong">Where you actually are</text>
+        <!-- error gap -->
+        <line x1="900" y1="128" x2="900" y2="274" stroke="var(--bad-dot)" stroke-width="1.5" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <text x="886" y="205" text-anchor="end" font-size="13" fill="var(--bad)">The error compounds</text>
+        <!-- start -->
+        <circle cx="80" cy="200" r="7" fill="var(--fg)"/>
+        <text x="80" y="176" font-size="13" class="t-strong">Assumption set</text>
+        <text x="80" y="160" font-size="12" fill="var(--muted)">“SMBs buy on price”</text>
+        <!-- events -->
+        <g font-size="12.5">
+          <circle cx="330" cy="184" r="4" fill="var(--warn-dot)"/>
+          <text x="330" y="88" text-anchor="middle" fill="var(--fg-2)">A competitor launches</text>
+          <text x="330" y="104" text-anchor="middle" fill="var(--fg-2)">instant payouts</text>
+          <line x1="330" y1="112" x2="330" y2="176" stroke="var(--line-strong)" stroke-dasharray="2 3"/>
+          <circle cx="600" cy="214" r="4" fill="var(--warn-dot)"/>
+          <text x="600" y="56" text-anchor="middle" fill="var(--fg-2)">Customers' reasons</text>
+          <text x="600" y="72" text-anchor="middle" fill="var(--fg-2)">change, unnoticed</text>
+          <line x1="600" y1="80" x2="600" y2="206" stroke="var(--line-strong)" stroke-dasharray="2 3"/>
+        </g>
+        <!-- Q4 visible -->
+        <g transform="translate(726,250)"><rect width="118" height="42" rx="8" fill="var(--bad-soft)" stroke="var(--bad-line)"/><text x="12" y="18" font-size="12" fill="var(--bad)" font-weight="700">Without Radar</text><text x="12" y="33" font-size="11.5" fill="var(--bad)">Found in Q4 metrics</text></g>
+        <!-- Radar flag -->
+        <g transform="translate(400,226)">
+          <line x1="22" y1="-36" x2="22" y2="-6" stroke="var(--accent)" stroke-width="2"/>
+          <circle cx="22" cy="-38" r="6" fill="var(--accent)"/>
+          <rect x="-6" y="0" width="152" height="42" rx="8" fill="var(--accent-soft)" stroke="var(--accent-line)"/>
+          <text x="6" y="18" font-size="12" fill="var(--accent)" font-weight="700">With Radar</text>
+          <text x="6" y="33" font-size="11.5" fill="var(--accent)">Drift flagged in weeks</text>
+        </g>
+      </svg>
+    </div>
+    <p class="figcap">Jo's dead-reckoning analogy, drawn out. The original decision wasn't wrong. It just stopped matching the world, and nothing checked.</p>
+
+    <div class="grid-2" style="margin-top:48px">
+      <div class="prose">
+        <p>Stack Overflow assumed developers needed a community to get answers. Shutterstock assumed original images would stay expensive to make. Both were right for years, and the dashboards looked fine right up until they didn't.</p>
+        <p>Most companies have the same blind spot on a smaller scale. Assumptions live in PRDs, strategy decks and people's heads. Each one has an expiry date, but nobody writes it down.</p>
+      </div>
+      <div class="prose">
+        <p>Maze is unusually well placed to fix this. Its customers already run the studies that confirm or undermine these beliefs. What's missing is a place to <strong style="color:var(--fg)">connect each belief to its evidence</strong> and notice when that evidence turns.</p>
+        <p>The demand is there. Research is wanted earlier and more often, yet most teams still bring it in after the problem is defined.</p>
+      </div>
+    </div>
+
+    <div class="stats" style="margin-top:64px">
+      <div class="stat"><b class="num">+20%</b><span>year-over-year rise in demand for research</span></div>
+      <div class="stat"><b class="num">33%</b><span>involve research at problem definition</span></div>
+      <div class="stat"><b class="num">22%</b><span>say research is essential at every level of strategy</span></div>
+      <div class="stat"><b class="num">69%</b><span>of researchers already use AI in their work</span></div>
+    </div>
+    <p class="src">Sources: Maze, <a href="https://maze.co/blog/future-user-research-2026/" target="_blank" rel="noopener">Future of User Research Report 2026</a> and State of Market Research Report 2026.</p>
+  </div>
+</section>
+
+<!-- THE GAP -->
+<section id="gap" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The gap</span>
+      <h2>The system of learning has five stages. Maze's product covers two.</h2>
+      <p class="lede">Maze's 2026 narrative describes a loop of Baseline, Monitor, Surface, Research and Decide. The product is excellent at Research and has a strong start on Decide. The first three stages have no product behind them yet.</p>
+    </div>
+
+    <div class="figure">
+      <svg class="fig-svg" viewBox="0 0 1000 340" role="img" aria-label="The five-stage loop. Research is fully covered by Maze today, Decide partly. Baseline, Monitor and Surface have no product today; Assumption Radar fills them.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--line-strong)"/></marker>
+          <pattern id="half" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--accent)" opacity=".35"/></pattern>
+        </defs>
+        <!-- bracket -->
+        <path d="M58 70 V54 H542 V70" fill="none" stroke="var(--ai)" stroke-width="2"/>
+        <rect x="190" y="34" width="220" height="32" rx="16" fill="var(--ai-soft)" stroke="var(--ai)"/>
+        <text x="300" y="55" text-anchor="middle" font-size="14" fill="var(--ai)" font-weight="700">Assumption Radar fills this</text>
+        <!-- connectors -->
+        <g stroke="var(--line-strong)" stroke-width="2" marker-end="url(#ah2)">
+          <line x1="152" y1="150" x2="246" y2="150"/><line x1="352" y1="150" x2="446" y2="150"/><line x1="552" y1="150" x2="646" y2="150"/><line x1="752" y1="150" x2="846" y2="150"/>
+        </g>
+        <path d="M900 246 C 900 304, 100 304, 100 252" fill="none" stroke="var(--line-strong)" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah2)"/>
+        <text x="500" y="330" text-anchor="middle" class="t-mono">Learning compounds: every decision updates the baseline</text>
+        <!-- nodes -->
+        <g>
+          <circle cx="100" cy="150" r="52" fill="var(--surface)" stroke="var(--warn-dot)" stroke-width="2" stroke-dasharray="6 5"/>
+          <text x="100" y="146" text-anchor="middle" font-size="15" class="t-strong">Baseline</text>
+          <text x="100" y="165" text-anchor="middle" font-size="11.5" fill="var(--muted)">What we believe</text>
+          <circle cx="300" cy="150" r="52" fill="var(--surface)" stroke="var(--warn-dot)" stroke-width="2" stroke-dasharray="6 5"/>
+          <text x="300" y="146" text-anchor="middle" font-size="15" class="t-strong">Monitor</text>
+          <text x="300" y="165" text-anchor="middle" font-size="11.5" fill="var(--muted)">Is it still true?</text>
+          <circle cx="500" cy="150" r="52" fill="var(--surface)" stroke="var(--warn-dot)" stroke-width="2" stroke-dasharray="6 5"/>
+          <text x="500" y="146" text-anchor="middle" font-size="15" class="t-strong">Surface</text>
+          <text x="500" y="165" text-anchor="middle" font-size="11.5" fill="var(--muted)">What to test next</text>
+          <circle cx="700" cy="150" r="52" fill="var(--accent)"/>
+          <text x="700" y="146" text-anchor="middle" font-size="15" class="t-on" font-weight="700">Research</text>
+          <text x="700" y="165" text-anchor="middle" font-size="11.5" class="t-on" opacity=".85">Run the study</text>
+          <circle cx="900" cy="150" r="52" fill="url(#half)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="900" y="146" text-anchor="middle" font-size="15" class="t-strong">Decide</text>
+          <text x="900" y="165" text-anchor="middle" font-size="11.5" fill="var(--fg-2)">Act on it</text>
+        </g>
+        <!-- status labels -->
+        <g font-size="12" text-anchor="middle">
+          <text x="100" y="230" fill="var(--warn)">No product today</text>
+          <text x="300" y="230" fill="var(--warn)">No product today</text>
+          <text x="500" y="230" fill="var(--warn)">No product today</text>
+          <text x="700" y="230" fill="var(--accent)" font-weight="600">Strong today</text>
+          <text x="900" y="230" fill="var(--accent)">Partial: reports, MCP</text>
+        </g>
+      </svg>
+    </div>
+    <p class="figcap">Stage names and order are from Jonathan Widawski's June 2026 essay, “The system of learning: The last competitive advantage.” The coverage assessment is my own reading of the current product.</p>
+
+    <div class="grid-3" style="margin-top:48px">
+      <div class="panel"><span class="tag">For the narrative</span><h3>A product behind the story</h3><p>The “system of learning” is currently a playbook. Radar makes it something customers can open, see and click.</p></div>
+      <div class="panel"><span class="tag">For the buyer</span><h3>A reason for execs to log in</h3><p>CPOs and strategy leads rarely open a study. They would open a live view of which of their bets are holding up.</p></div>
+      <div class="panel"><span class="tag">For the moat</span><h3>A record that's hard to leave</h3><p>Once a company's assumptions and their history live in Maze, switching tools means losing institutional memory.</p></div>
+    </div>
+  </div>
+</section>
+<!-- PRODUCT -->
+<section id="product">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The product</span>
+      <h2>One drifting belief, from first signal to updated decision.</h2>
+      <p class="lede">The prototype follows Dana Mercer, Head of Product at Lumen, a fictional payments app for small businesses. Her team has priced to win on cost. Here's what happens when Maze notices that customers have moved on.</p>
+    </div>
+
+    <div class="steps">
+      <!-- 1 -->
+      <article class="step">
+        <div class="step-copy">
+          <div class="step-no">Step 1 <span class="stage-chip">Baseline</span></div>
+          <h3>Every belief gets an owner, a score and an expiry date</h3>
+          <p>Assumptions get their own home next to Projects. Each one shows who owns it, how confident the evidence makes us, when it was last checked and how much research backs it.</p>
+          <ul>
+            <li>Statuses are visible at a glance: Holding, Drifting, Expired, Untested.</li>
+            <li>The list sorts by what needs attention, so the work starts at the top.</li>
+            <li>Confidence comes from linked Maze studies, not opinion.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="browser">
+            <div class="shot-chrome" aria-hidden="true"><i></i><i></i><i></i><span class="shot-url">Assumptions · All assumptions</span></div>
+            <img src="shots/table.jpg" width="1440" height="880" alt="Table of 14 assumptions with category, owner, confidence sparkline, status, last validated and evidence count. The top row, 'SMB owners choose Lumen mainly because it's the cheapest option', is highlighted as drifting at 41.">
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="step">
+        <div class="step-copy">
+          <div class="step-no">Step 2 <span class="stage-chip">Monitor</span></div>
+          <h3>Maze notices the drift and explains why</h3>
+          <p>Confidence in “customers pick us because we're cheapest” fell from 78 to 41 over eight weeks as new studies came in. Maze flagged it on September 14, when it crossed the drift threshold.</p>
+          <ul>
+            <li>The flag shows its working: price mentions fell from 64% to 22% across 212 participants, while payout speed rose from 14% to 41%.</li>
+            <li>It names its sources and limits, and rates its own confidence.</li>
+            <li>A human confirms with “Looks right” or pushes back.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="crop"><img src="shots/detail-why.jpg" width="1220" height="660" alt="Confidence history chart falling from 78 to 41 with a 'Drift detected' marker at September 14, next to a Maze AI card titled 'Why Maze flagged this' comparing price, payout speed and trust between November 2025 and August–September 2026."></div>
+          <p class="shot-label">Assumption detail · Overview tab</p>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="step">
+        <div class="step-copy">
+          <div class="step-no">Step 3 <span class="stage-chip">Surface</span></div>
+          <h3>The evidence speaks in customers' own words</h3>
+          <p>Recent quotes sit next to older ones, so the shift is easy to hear. Earlier feedback is about fees. Recent feedback is about getting paid fast and on time.</p>
+          <ul>
+            <li>Every quote links to its participant, study and timestamp.</li>
+            <li>Interview clips are one click away.</li>
+            <li>This is the traceability researchers need before they trust an AI flag.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="crop"><img src="shots/evidence.jpg" width="1220" height="820" alt="Evidence tab with two columns: recent quotes from August–September 2026 about payout speed and trust, and earlier quotes from November 2025 about low prices."></div>
+          <p class="shot-label">Assumption detail · Evidence tab</p>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="step">
+        <div class="step-copy">
+          <div class="step-no">Step 4 <span class="stage-chip">Research</span></div>
+          <h3>One click turns doubt into a rigorous study</h3>
+          <p>“Re-test with Maze” opens the AI Study Builder already drafted from the assumption and its evidence. It recommends AI-moderated interviews plus a short survey.</p>
+          <ul>
+            <li>Bias check catches a leading question and suggests a neutral rewrite.</li>
+            <li>Recruitment defaults to the Maze panel: 40 SMB owners in the US.</li>
+            <li>Fresh Eyes is on, excluding 312 people who recently took a Lumen study.</li>
+          </ul>
+        </div>
+        <div class="pair">
+          <div>
+            <div class="crop"><img src="shots/questions.jpg" width="960" height="750" alt="Research questions step with a Maze AI bias check flagging 'How much do Lumen's low fees influence your decision to keep using it?' as leading and suggesting 'What factors influence your decision to keep using Lumen?'"></div>
+            <p class="shot-label">Questions with bias check</p>
+          </div>
+          <div>
+            <div class="crop"><img src="shots/recruit.jpg" width="960" height="600" alt="Recruitment step showing Maze panel, audience SMB owners, United States, 1–50 employees, sample size 40, and the Fresh Eyes toggle switched on."></div>
+            <p class="shot-label">Recruitment with Fresh Eyes</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="step">
+        <div class="step-copy">
+          <div class="step-no">Step 5 <span class="stage-chip">Decide</span></div>
+          <h3>The belief is updated and the decisions that depended on it are flagged</h3>
+          <p>Results come back: instant payouts lead at 46%, trust follows at 27% and price drops to 18%. Maze proposes a revised assumption, and Dana accepts it.</p>
+          <ul>
+            <li>The old statement is kept as version 1. The new one starts at 82 confidence.</li>
+            <li>The Q2 pricing page decision (“lead with lowest fees”) moves from At risk to Needs review, and its owner is notified.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="browser">
+            <div class="shot-chrome" aria-hidden="true"><i></i><i></i><i></i><span class="shot-url">Assumptions · Pricing · Re-test results</span></div>
+            <img src="shots/results.jpg" width="1440" height="900" alt="Re-test results page: a bar chart of main reasons for choosing Lumen (instant payouts 46%, trust 27%, price 18%, other 9%), a Maze AI synthesis, and a suggested update card replacing the old assumption with 'SMB owners choose Lumen mainly for fast, reliable payouts; price is secondary.'">
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- before / after -->
+    <div style="margin-top:96px">
+      <div class="sec-head" style="margin-bottom:28px">
+        <span class="kicker">Before and after</span>
+        <h3 style="font-size:28px;letter-spacing:-.02em">Same assumption, a different company record.</h3>
+      </div>
+      <div class="ba">
+        <div>
+          <span class="ba-tag before">Before · v1 · Drifting</span>
+          <div class="crop"><img src="shots/detail.jpg" width="1440" height="900" alt="Assumption detail before the re-test: status Drifting, confidence 41, down 37 in 8 weeks, version 1."></div>
+        </div>
+        <div>
+          <span class="ba-tag after">After · v2 · Holding</span>
+          <div class="crop"><img src="shots/after.jpg" width="1220" height="740" alt="Assumption detail after the re-test: new statement about fast, reliable payouts, status Holding, confidence 82, and a chart that jumps from 41 to 82 at the re-test point."></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GUIDED DEMO -->
+<section class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Built to be shown</span>
+      <h2>A two-minute guided tour does the pitching.</h2>
+      <p class="lede">Anyone can open the link and get the story without a walkthrough call. A 14-step guide drives the interface, waits for the viewer to click the key moments, and can be restarted or jumped into at any step.</p>
+    </div>
+    <div class="grid-2" style="align-items:start">
+      <div>
+        <div class="crop"><img src="shots/welcome.jpg" width="1440" height="900" alt="Welcome modal reading 'What if Maze could tell you when your product bets stop being true?' with a falling confidence line from 78 to 41 and a 'Start the tour' button."></div>
+        <p class="shot-label">Opening moment</p>
+      </div>
+      <div>
+        <div class="crop"><img src="shots/guide-menu.jpg" width="1440" height="900" alt="The Guide menu open over the results page, listing all 14 tour steps, with options to start the tour or reset the demo data."></div>
+        <p class="shot-label">Guide menu: jump to any step, or reset the demo</p>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="crop"><img src="shots/loop.jpg" width="1220" height="600" alt="Closing screen titled 'From assumptions to better decisions' showing the five-stage loop Baseline, Monitor, Surface, Research, Decide, all completed."></div>
+      <p class="shot-label">Closing screen: the viewer has completed all five stages of the loop</p>
+    </div>
+  </div>
+</section>
+<!-- BUILT FROM WHAT EXISTS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Feasibility</span>
+      <h2>Most of the engine already exists.</h2>
+      <p class="lede">Radar is mainly a new data model (assumptions, evidence links, decisions) and a monitoring layer on top of capabilities Maze has already shipped. Each shipped part becomes more valuable because Radar gives it a reason to run.</p>
+    </div>
+    <div class="reuse">
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>AI analysis and themes</b><span>Scores evidence for and against each assumption</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>AI Study Builder</b><span>Drafts the re-test from the assumption</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>Bias detection</b><span>Keeps re-tests neutral</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>AI Moderator</b><span>Runs the interviews at scale</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>Panel and Fresh Eyes</b><span>Recruits clean samples in about a day</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>Insights Hub</b><span>Source of linked quotes and clips</span></div>
+      <div class="reuse-item exists"><span class="flag">Shipped</span><b>Maze MCP</b><span>Later: import assumptions from PRDs and docs</span></div>
+      <div class="reuse-item newpart"><span class="flag">New</span><b>Assumption register and drift scoring</b><span>The record, confidence model, alerts and decision links</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- BUSINESS CASE -->
+<section id="business" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The business case</span>
+      <h2>Every flag starts a study. Every study strengthens the record.</h2>
+      <p class="lede">Radar creates a usage loop inside existing accounts. It brings new people into Maze, gives teams a recurring reason to run research, and builds a record that gets more valuable over time.</p>
+    </div>
+
+    <div class="grid-2" style="align-items:center;gap:40px">
+      <div class="figure" style="padding:20px">
+        <svg class="fig-svg" viewBox="0 0 520 440" role="img" aria-label="Flywheel: an assumption is flagged, a study is launched, evidence is added, confidence is updated, and the cycle repeats. More decisions end up grounded in Maze.">
+          <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+          <circle cx="260" cy="220" r="150" fill="none" stroke="var(--accent-line)" stroke-width="14"/>
+          <g fill="none" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ah3)">
+            <path d="M318 82 A150 150 0 0 1 398 162"/>
+            <path d="M398 278 A150 150 0 0 1 318 358"/>
+            <path d="M202 358 A150 150 0 0 1 122 278"/>
+            <path d="M122 162 A150 150 0 0 1 202 82"/>
+          </g>
+          <circle cx="260" cy="220" r="78" fill="var(--accent)"/>
+          <text x="260" y="212" text-anchor="middle" font-size="15" class="t-on" font-weight="700">More decisions</text>
+          <text x="260" y="232" text-anchor="middle" font-size="15" class="t-on" font-weight="700">grounded in Maze</text>
+          <g font-size="13.5" text-anchor="middle">
+            <rect x="185" y="52" width="150" height="44" rx="10" fill="var(--surface)" stroke="var(--warn-dot)"/>
+            <text x="260" y="71" class="t-strong">Assumption flagged</text><text x="260" y="87" font-size="11.5" fill="var(--muted)">Drift or expiry</text>
+            <rect x="372" y="198" width="140" height="44" rx="10" fill="var(--surface)" stroke="var(--line-strong)"/>
+            <text x="442" y="217" class="t-strong">Study launched</text><text x="442" y="233" font-size="11.5" fill="var(--muted)">Panel credits used</text>
+            <rect x="185" y="344" width="150" height="44" rx="10" fill="var(--surface)" stroke="var(--line-strong)"/>
+            <text x="260" y="363" class="t-strong">Evidence added</text><text x="260" y="379" font-size="11.5" fill="var(--muted)">Quotes, clips, themes</text>
+            <rect x="8" y="198" width="140" height="44" rx="10" fill="var(--surface)" stroke="var(--ok-dot)"/>
+            <text x="78" y="217" class="t-strong">Confidence updated</text><text x="78" y="233" font-size="11.5" fill="var(--muted)">Decisions re-checked</text>
+          </g>
+        </svg>
+      </div>
+      <div class="grid-3" style="grid-template-columns:1fr;gap:16px">
+        <div class="panel"><span class="tag">Expansion</span><h3>New people inside existing accounts</h3><p>CPOs, strategy leads and product managers who rarely build studies would still watch the assumptions they own. That creates a natural path to more seats.</p></div>
+        <div class="panel"><span class="tag">Usage</span><h3>A recurring reason to research</h3><p>Research today often happens when someone remembers to ask. Expiry dates and drift flags give teams a built-in prompt, which means steady study volume and panel usage.</p></div>
+        <div class="panel"><span class="tag">Retention</span><h3>A record that's hard to replace</h3><p>Beliefs, evidence and decisions linked over years become company memory. No other research tool holds that record, so leaving Maze would mean losing it.</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:72px;margin-bottom:20px">What it gives each part of the leadership team</h3>
+    <div class="who">
+      <div class="panel"><span class="role">CEO</span><h3>The system of learning, made real</h3><ul><li>Turns the 2026 narrative into something customers can open and use.</li><li>Answers the dead-reckoning question in product form.</li></ul></div>
+      <div class="panel"><span class="role">Product</span><h3>A clear next step for Insights Hub and MCP</h3><ul><li>Builds on shipped AI, Study Builder and Insights Hub, rather than starting a new engine.</li><li>Keeps the research-grade promise: every flag is explained and confirmed by a person.</li></ul></div>
+      <div class="panel"><span class="role">Revenue</span><h3>Land and expand, built into the product</h3><ul><li>Gives Maze a reason to sell to executives, not only to research teams.</li><li>Each flag leads to a study, which drives panel revenue and makes renewals easier.</li></ul></div>
+      <div class="panel"><span class="role">Marketing</span><h3>A story worth launching</h3><ul><li>“Know when your product bets stop being true” is easy to repeat and hard to copy.</li><li>An assumption audit makes a strong lead magnet for the State of Research reports.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- LANDSCAPE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Landscape</span>
+      <h2>The AI-research race is about running studies faster. Radar asks which studies to run.</h2>
+      <p class="lede">Competitors are well funded and focused on running interviews faster. That is a race about speed. Radar moves Maze to a question rivals don't answer: which beliefs need testing now, and what changed when you did.</p>
+    </div>
+    <div class="table-box">
+      <table class="cmp">
+        <thead><tr><th>Platform</th><th>Primary focus (public positioning)</th><th>Living record of company assumptions</th></tr></thead>
+        <tbody>
+          <tr class="us"><td>Maze + Assumption Radar</td><td>Multi-method research, panel, and an assumption layer that triggers studies</td><td>Yes, with evidence, drift and decision links</td></tr>
+          <tr><td>Listen Labs</td><td>AI-moderated customer interviews at scale</td><td>Not a stated focus</td></tr>
+          <tr><td>Outset</td><td>AI-moderated interviews for product teams</td><td>Not a stated focus</td></tr>
+          <tr><td>UserTesting</td><td>Video-based human insight and usability testing</td><td>Not a stated focus</td></tr>
+          <tr><td>Dovetail</td><td>Research repository and qualitative analysis</td><td>Stores insights, not tracked beliefs</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src">Based on each company's public positioning as of October 2026. Listen Labs raised a $69M Series B in January 2026, which shows how much money is going into the speed race.</p>
+  </div>
+</section>
+
+<!-- NEXT STEPS -->
+<section id="next" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Proposed next steps</span>
+      <h2>Prove it with five customers in six weeks.</h2>
+      <p class="lede">The fastest way to test the idea is a small pilot. Partners use a manual version of the register, and the team learns whether they keep coming back to it.</p>
+    </div>
+
+    <div class="roadmap">
+      <div class="rm done"><div class="rm-bar"></div><span class="rm-when">Now · Done</span><h4>Concept prototype</h4><p>Clickable end-to-end flow with a guided tour, built on Maze's design language.</p></div>
+      <div class="rm"><div class="rm-bar"></div><span class="rm-when">Weeks 1–2</span><h4>Recruit and seed</h4><ul><li>5 design partners with active Maze research programs</li><li>15–25 assumptions each, linked to existing studies</li></ul></div>
+      <div class="rm"><div class="rm-bar"></div><span class="rm-when">Weeks 3–5</span><h4>Run the loop</h4><ul><li>Weekly drift reviews, scored by hand from new Maze data</li><li>At least one re-test per partner, triggered by a flag</li></ul></div>
+      <div class="rm"><div class="rm-bar"></div><span class="rm-when">Week 6</span><h4>Decide</h4><ul><li>Read the signals below</li><li>Go or no-go on a beta that scores drift automatically</li></ul></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:56px;gap:40px">
+      <div>
+        <h3 style="margin-bottom:8px">Signals to watch</h3>
+        <p style="color:var(--muted);font-size:15px;margin-bottom:8px">Proposed targets for the pilot, to be refined with the product team.</p>
+        <div class="metric-row"><div><b>Partners keep the register current</b><br><span>Assumptions reviewed or updated each week</span></div><em>4 of 5</em></div>
+        <div class="metric-row"><div><b>Flags lead to studies</b><br><span>Share of drift flags that become a re-test</span></div><em>≥ 50%</em></div>
+        <div class="metric-row"><div><b>Leaders show up</b><br><span>Non-researcher viewers per account each week</span></div><em>≥ 3</em></div>
+        <div class="metric-row"><div><b>A decision changes</b><br><span>Partners who revise a roadmap call because of a flag</span></div><em>≥ 2</em></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:8px">After the pilot</h3>
+        <p style="color:var(--muted);font-size:15px;margin-bottom:8px">A possible path from concept to general availability.</p>
+        <div class="metric-row"><div><b>V1 · Register</b><br><span>Assumptions, owners, expiry dates and evidence links</span></div><em>Manual</em></div>
+        <div class="metric-row"><div><b>V2 · Drift detection</b><br><span>Confidence scored automatically from new Maze studies</span></div><em>Automated</em></div>
+        <div class="metric-row"><div><b>V3 · Capture</b><br><span>Pull assumptions from PRDs and strategy docs through Maze MCP</span></div><em>Connected</em></div>
+        <div class="metric-row"><div><b>V4 · Market signals</b><br><span>Add support tickets, reviews and market data as inputs</span></div><em>Expanded</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="ink">
+  <div class="wrap cta">
+    <span class="kicker">See it for yourself</span>
+    <p class="big-quote">Two minutes, one drifting belief, and the full loop from signal to decision.</p>
+    <p style="max-width:58ch">The prototype runs in any browser with no login. Start the guided tour from the welcome screen, or choose “I'll explore” to look around on your own.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a class="btn btn-primary" href="https://radar-maze.vercel.app/" target="_blank" rel="noopener">Open the live prototype
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 10L10 4M5 4h5v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+    <p style="font-size:15px">I'd welcome 30 minutes with the product team to walk through it and talk about a pilot.</p>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Assumption Radar · a concept by Temi · October 2026</span>
+    <span>An independent concept prototype, not a Maze product. Lumen and all of its data are fictional.</span>
+  </div>
+</footer>
+
+</body>
+</html>
